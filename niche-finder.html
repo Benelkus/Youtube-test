@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YouTube Niche Finder</title>
+<style>
+:root{
+  --bg:#0b0e14; --bg2:#11151f; --card:#151a26; --card2:#1b2130; --line:#242c3d;
+  --txt:#e8ecf4; --dim:#94a0b8; --dim2:#67728a;
+  --acc:#ff3b5c; --acc2:#ff7a45; --ok:#2fd47a; --warn:#ffc542; --blue:#4d9bff; --purple:#9b7bff;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:radial-gradient(1200px 600px at 15% -10%,#1b2236 0%,transparent 60%),
+             radial-gradient(900px 500px at 95% 0%,#2a1622 0%,transparent 55%),var(--bg);
+  color:var(--txt);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  min-height:100vh;
+}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1400px;margin:0 auto;padding:0 18px 80px}
+
+/* ---------- header ---------- */
+header{padding:26px 0 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{
+  width:46px;height:46px;border-radius:13px;flex:none;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  display:grid;place-items:center;font-size:22px;
+  box-shadow:0 8px 24px rgba(255,59,92,.32);
+}
+h1{font-size:22px;margin:0;letter-spacing:-.3px}
+.sub{color:var(--dim);font-size:13px;margin-top:2px}
+.hgrow{flex:1}
+
+/* ---------- generic ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card+.card{margin-top:14px}
+h2{font-size:16px;margin:0 0 4px}
+h3{font-size:14px;margin:0 0 10px;color:var(--dim)}
+.muted{color:var(--dim);font-size:13px}
+.tiny{font-size:12px;color:var(--dim2)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;gap:12px}
+.sep{height:1px;background:var(--line);margin:16px 0}
+
+button,.btn{
+  background:var(--card2);color:var(--txt);border:1px solid var(--line);
+  border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;transition:.15s;
+}
+button:hover,.btn:hover{border-color:#3a445c;background:#212938;text-decoration:none}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;color:#fff;
+  box-shadow:0 6px 18px rgba(255,59,92,.28)}
+.primary:hover{background:linear-gradient(135deg,#ff2b50,#ff6b30);filter:brightness(1.06)}
+.ghost{background:transparent}
+.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+
+input,select{
+  background:var(--bg2);border:1px solid var(--line);color:var(--txt);
+  border-radius:10px;padding:9px 11px;font-size:13px;font-family:inherit;outline:none;width:100%;
+}
+input:focus,select:focus{border-color:#4a5878}
+label.f{display:block;font-size:12px;color:var(--dim);margin-bottom:5px;font-weight:600}
+.field{min-width:0}
+
+/* ---------- tabs ---------- */
+nav.tabs{display:flex;gap:6px;margin:18px 0 16px;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px}
+nav.tabs button{background:transparent;border:none;color:var(--dim);padding:9px 15px;border-radius:9px}
+nav.tabs button:hover{background:var(--card2);color:var(--txt)}
+nav.tabs button.on{background:var(--card2);color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
+nav.tabs .cnt{display:inline-block;margin-left:7px;background:var(--acc);color:#fff;
+  font-size:10px;padding:1px 6px;border-radius:20px;vertical-align:1px}
+.pane{display:none}
+.pane.on{display:block}
+
+/* ---------- niche picker ---------- */
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.cat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.cat>summary{list-style:none;cursor:pointer;padding:11px 13px;display:flex;align-items:center;gap:9px;
+  font-weight:600;font-size:13px;user-select:none}
+.cat>summary::-webkit-details-marker{display:none}
+.cat>summary:hover{background:var(--card2)}
+.cat .em{font-size:17px}
+.cat .n{margin-left:auto;font-size:11px;color:var(--dim2);font-weight:500}
+.subs{padding:4px 10px 10px;display:flex;flex-direction:column;gap:2px}
+.subs label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--dim);
+  padding:5px 6px;border-radius:7px;cursor:pointer}
+.subs label:hover{background:var(--card2);color:var(--txt)}
+.subs input{width:auto;flex:none;margin-top:2px;accent-color:var(--acc)}
+
+/* ---------- progress ---------- */
+.bar{height:7px;background:var(--bg2);border-radius:20px;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%;width:0;border-radius:20px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .3s}
+.logbox{background:#080b11;border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  max-height:170px;overflow:auto;font:11.5px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim)}
+.logbox b{color:var(--ok);font-weight:600}
+.logbox .e{color:var(--acc)}
+.logbox .w{color:var(--warn)}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+.stat .k{font-size:11px;color:var(--dim2);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.stat .v{font-size:24px;font-weight:700;margin-top:3px;letter-spacing:-.5px}
+
+/* ---------- table ---------- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:900px}
+th{background:var(--bg2);color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.4px;
+  text-align:left;padding:10px 12px;font-weight:700;position:sticky;top:0;cursor:pointer;white-space:nowrap;
+  border-bottom:1px solid var(--line)}
+th:hover{color:var(--txt)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--card2)}
+.thumb{width:110px;height:62px;border-radius:8px;object-fit:cover;display:block;background:var(--bg2)}
+.vt{font-weight:600;line-height:1.35;display:block;max-width:420px;color:var(--txt)}
+.vt:hover{color:var(--acc)}
+.ch{font-size:11.5px;color:var(--dim);margin-top:4px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.b-hot{background:rgba(255,59,92,.16);color:#ff7089}
+.b-ok{background:rgba(47,212,122,.14);color:var(--ok)}
+.b-mid{background:rgba(255,197,66,.14);color:var(--warn)}
+.b-low{background:rgba(148,160,184,.14);color:var(--dim)}
+.b-short{background:rgba(155,123,255,.16);color:var(--purple)}
+.num{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+
+/* ---------- niche cards ---------- */
+.ncards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.ncard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;
+  position:relative;overflow:hidden}
+.ncard.hot{border-color:rgba(255,59,92,.45)}
+.ncard .rank{position:absolute;top:14px;right:14px;font-size:26px;font-weight:800;color:#212939;letter-spacing:-1px}
+.ncard h4{margin:0 0 2px;font-size:15px;padding-right:40px}
+.ncard .cat{font-size:11.5px;color:var(--dim2);margin-bottom:11px}
+.metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:11px 0}
+.metrics div{background:var(--bg2);border-radius:9px;padding:8px 9px;text-align:center}
+.metrics .mk{font-size:10px;color:var(--dim2);text-transform:uppercase;font-weight:700;letter-spacing:.3px}
+.metrics .mv{font-size:16px;font-weight:700;margin-top:1px}
+.ncard .best{font-size:12px;color:var(--dim);border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+.ncard .best b{color:var(--txt);font-weight:600}
+
+/* ---------- ideas ---------- */
+.titles{display:flex;flex-direction:column;gap:7px}
+.ti{display:flex;gap:11px;align-items:center;background:var(--bg2);border:1px solid var(--line);
+  border-radius:10px;padding:10px 12px}
+.ti .hook{flex:none;width:42px;text-align:center;font-weight:800;font-size:13px;font-variant-numeric:tabular-nums}
+.ti .txt{flex:1;font-size:13.5px;font-weight:600;line-height:1.4}
+.ti button{flex:none}
+.h-hi{color:var(--ok)} .h-md{color:var(--warn)} .h-lo{color:var(--dim2)}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:12px;
+  color:var(--dim);cursor:pointer}
+.chip:hover{border-color:#4a5878;color:var(--txt)}
+.chip.on{background:rgba(255,59,92,.14);border-color:rgba(255,59,92,.4);color:#ff7089}
+.adj{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.adjc{background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:13px}
+.adjc .t{font-weight:700;font-size:13px;margin-bottom:5px}
+.adjc .a{font-size:12px;color:var(--dim);line-height:1.5}
+
+.empty{text-align:center;padding:52px 20px;color:var(--dim2)}
+.empty .ico{font-size:42px;margin-bottom:10px;opacity:.55}
+.note{background:rgba(77,155,255,.09);border:1px solid rgba(77,155,255,.28);border-radius:11px;
+  padding:12px 14px;font-size:13px;color:#a8c8f5}
+.warnbox{background:rgba(255,197,66,.09);border:1px solid rgba(255,197,66,.28);border-radius:11px;
+  padding:12px 14px;font-size:13px;color:#f0d08a}
+ol.steps{padding-left:20px;line-height:1.9;font-size:13.5px}
+ol.steps code{background:var(--bg2);padding:2px 6px;border-radius:5px;font-size:12px;border:1px solid var(--line)}
+kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12px}
+@media(max-width:700px){
+  .metrics{grid-template-columns:1fr 1fr}
+  .vt{max-width:230px}
+  h1{font-size:19px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">🎯</div>
+  <div>
+    <h1>YouTube Niche Finder</h1>
+    <div class="sub">Détecte les niches qui explosent : <b>+100k vues</b> · <b>&lt; 3 semaines</b> · <b>&lt; 20k abonnés</b></div>
+  </div>
+  <div class="hgrow"></div>
+  <div class="row">
+    <div class="field" style="width:250px">
+      <input id="apikey" type="password" placeholder="Clé API YouTube Data v3…" autocomplete="off">
+    </div>
+    <button class="sm" onclick="saveKey()">Enregistrer</button>
+    <button class="sm ghost" onclick="go('aide')">Comment l'obtenir ?</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button id="t-scan" class="on" onclick="go('scan')">🔍 Recherche</button>
+  <button id="t-res"  onclick="go('res')">📈 Vidéos détectées<span class="cnt" id="c-res">0</span></button>
+  <button id="t-niches" onclick="go('niches')">🏆 Classement des niches<span class="cnt" id="c-niches">0</span></button>
+  <button id="t-idees" onclick="go('idees')">💡 Idées &amp; titres</button>
+  <button id="t-aide" onclick="go('aide')">❓ Aide</button>
+</nav>
+
+<!-- ══════════════════ SCAN ══════════════════ -->
+<section id="p-scan" class="pane on">
+
+  <div class="card">
+    <h2>1. Tes critères</h2>
+    <p class="muted">Les 3 filtres qui définissent un « outlier » : une vidéo qui surperforme massivement sa chaîne.</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-top:14px">
+      <div class="field"><label class="f">Vues minimum</label>
+        <input id="minViews" type="number" value="100000" step="10000" min="1000"></div>
+      <div class="field"><label class="f">Âge max (jours)</label>
+        <input id="maxAge" type="number" value="21" min="1" max="90"></div>
+      <div class="field"><label class="f">Abonnés max</label>
+        <input id="maxSubs" type="number" value="20000" step="1000" min="0"></div>
+      <div class="field"><label class="f">Marché</label>
+        <select id="market">
+          <option value="FR|fr">🇫🇷 France (français)</option>
+          <option value="BE|fr">🇧🇪 Belgique (français)</option>
+          <option value="CA|fr">🇨🇦 Canada (français)</option>
+          <option value="US|en">🇺🇸 États-Unis (anglais)</option>
+          <option value="GB|en">🇬🇧 Royaume-Uni (anglais)</option>
+          <option value="|">🌍 Mondial (sans filtre)</option>
+        </select></div>
+      <div class="field"><label class="f">Format</label>
+        <select id="dur">
+          <option value="long">Vidéos longues (&gt; 60 s)</option>
+          <option value="all">Tout (longues + Shorts)</option>
+          <option value="short">Shorts uniquement</option>
+        </select></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. Où chercher</h2>
+    <p class="muted">Coche des sous-niches à explorer : chacune teste 2 mots-clés. Google offre 10 000 unités de quota
+      par jour — le compteur à droite indique la consommation estimée. Commence avec 5 à 15 cases.
+      <span class="tiny">(le format « vidéos longues » coûte le double : il interroge les durées moyennes et longues)</span></p>
+    <div class="row" style="margin:13px 0">
+      <button class="sm" onclick="pickRandom(10)">🎲 10 au hasard</button>
+      <button class="sm" onclick="pickRandom(25)">🎲 25 au hasard</button>
+      <button class="sm" onclick="pickNone()">Tout décocher</button>
+      <button class="sm" onclick="toggleAll(true)">Tout ouvrir</button>
+      <button class="sm" onclick="toggleAll(false)">Tout replier</button>
+      <span class="tiny" id="pickCount" style="margin-left:auto"></span>
+    </div>
+    <div class="cats" id="cats"></div>
+    <div class="sep"></div>
+    <label class="f">Mots-clés personnalisés (séparés par des virgules)</label>
+    <input id="customKw" placeholder="ex : reconversion boulanger, kettlebell débutant, jardin urbain…">
+  </div>
+
+  <div class="card">
+    <h2>3. Lancer l'analyse</h2>
+    <div class="row" style="margin:12px 0">
+      <button class="primary" id="btnScan" onclick="runScan()">▶︎ Lancer la recherche</button>
+      <button class="sm" id="btnStop" onclick="STOP=true" disabled>Arrêter</button>
+      <button class="sm ghost" onclick="clearAll()">Vider les résultats</button>
+      <span class="tiny" id="quotaTxt" style="margin-left:auto"></span>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="logbox" id="log" style="margin-top:12px">En attente…</div>
+  </div>
+</section>
+
+<!-- ══════════════════ RESULTATS ══════════════════ -->
+<section id="p-res" class="pane">
+  <div class="card">
+    <div class="row">
+      <h2 style="margin:0">Vidéos détectées</h2>
+      <div class="hgrow"></div>
+      <input id="filterTxt" placeholder="Filtrer…" style="width:180px" oninput="renderResults()">
+      <select id="sortBy" style="width:190px" onchange="renderResults()">
+        <option value="score">Trier : Score d'opportunité</option>
+        <option value="mult">Trier : Multiplicateur</option>
+        <option value="views">Trier : Vues</option>
+        <option value="vel">Trier : Vues / jour</option>
+        <option value="subs">Trier : Abonnés (croissant)</option>
+        <option value="age">Trier : Plus récentes</option>
+      </select>
+      <button class="sm" onclick="exportCSV()">⬇︎ CSV</button>
+    </div>
+    <div class="stats" id="stats" style="margin-top:14px"></div>
+  </div>
+  <div id="resArea"></div>
+</section>
+
+<!-- ══════════════════ NICHES ══════════════════ -->
+<section id="p-niches" class="pane">
+  <div class="card">
+    <h2>Classement des niches</h2>
+    <p class="muted">Chaque niche est notée sur la base du nombre d'outliers trouvés, du multiplicateur médian
+      (vues ÷ abonnés) et du volume de vues. Plus le score est haut, plus la niche est facile à percer <b>maintenant</b>.</p>
+  </div>
+  <div id="nicheArea"></div>
+</section>
+
+<!-- ══════════════════ IDEES ══════════════════ -->
+<section id="p-idees" class="pane">
+  <div class="card">
+    <h2>Idées de vidéos &amp; titres accrocheurs</h2>
+    <p class="muted">Choisis une niche : l'outil analyse les titres gagnants réels, en extrait les angles qui marchent,
+      puis génère des thèmes connexes et des titres classés par potentiel de clic.</p>
+    <div class="row" style="margin-top:13px">
+      <div class="field" style="max-width:420px">
+        <label class="f">Niche</label>
+        <select id="ideaNiche" onchange="renderIdeas()"></select>
+      </div>
+      <div class="field" style="max-width:260px">
+        <label class="f">Sujet précis (facultatif)</label>
+        <input id="ideaTopic" placeholder="ex : kettlebell à la maison" oninput="renderIdeas()">
+      </div>
+      <div class="field" style="max-width:150px">
+        <label class="f">Langue</label>
+        <select id="ideaLang" onchange="renderIdeas()">
+          <option value="fr">Français</option><option value="en">Anglais</option>
+        </select>
+      </div>
+      <button class="sm" style="margin-top:20px" onclick="renderIdeas(true)">🔄 Regénérer</button>
+    </div>
+  </div>
+  <div id="ideaArea"></div>
+</section>
+
+<!-- ══════════════════ AIDE ══════════════════ -->
+<section id="p-aide" class="pane">
+  <div class="card">
+    <h2>Obtenir ta clé API YouTube (gratuit, 3 minutes)</h2>
+    <ol class="steps">
+      <li>Va sur <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a> et connecte-toi avec ton compte Google.</li>
+      <li>En haut, clique sur le sélecteur de projet → <b>Nouveau projet</b> → nomme-le <code>niche-finder</code> → <b>Créer</b>.</li>
+      <li>Dans la barre de recherche, tape <code>YouTube Data API v3</code> → ouvre-la → <b>Activer</b>.</li>
+      <li>Menu de gauche → <b>API et services</b> → <b>Identifiants</b> → <b>Créer des identifiants</b> → <b>Clé API</b>.</li>
+      <li>Copie la clé et colle-la en haut de cette page, puis clique sur <b>Enregistrer</b>.</li>
+    </ol>
+    <div class="warnbox" style="margin-top:14px">
+      <b>Important :</b> si tu restreins la clé, choisis « Restriction d'API » → YouTube Data API v3.
+      Ne mets <b>pas</b> de restriction par « site web / référent HTTP » : le fichier s'ouvre en local
+      et Google bloquerait la requête.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Comment l'utiliser</h2>
+    <div class="note"><b>Ouvre ce fichier depuis ton ordinateur</b> (double-clic sur <code>niche-finder.html</code>).
+      Il parle directement à l'API de Google : rien n'est envoyé ailleurs, ta clé reste dans ton navigateur.</div>
+    <div class="sep"></div>
+    <h3>Le quota</h3>
+    <p class="muted">Google offre <b>10 000 unités/jour</b>. Une sous-niche cochée coûte ~102 unités →
+      environ <b>95 sous-niches par jour</b>. Le compteur en bas de l'onglet Recherche te dit où tu en es.
+      Le quota se remet à zéro à minuit (heure du Pacifique).</p>
+    <div class="sep"></div>
+    <h3>Lire les résultats</h3>
+    <p class="muted">
+      <b>Multiplicateur</b> = vues ÷ abonnés. C'est <u>le</u> signal. Au-dessus de ×10, l'algorithme YouTube pousse
+      la vidéo vers des gens qui ne connaissent pas la chaîne : la niche a de la demande non servie.<br>
+      <b>Vues/jour</b> = vitesse. Une vidéo à 30 000 vues/jour est encore en pleine ascension.<br>
+      <b>Score</b> = synthèse des deux + volume + engagement, sur 100.
+    </p>
+    <div class="sep"></div>
+    <h3>Méthode de réplication</h3>
+    <ol class="steps">
+      <li>Onglet <b>Classement des niches</b> → repère les niches 🔥 (score &gt; 70).</li>
+      <li>Ouvre 3 à 5 vidéos gagnantes : regarde la miniature, les 15 premières secondes, la structure.</li>
+      <li>Onglet <b>Idées &amp; titres</b> → prends les angles connexes (pas la copie exacte : l'angle voisin).</li>
+      <li>Publie 5 vidéos sur la même sous-niche en 2 semaines. Si aucune ne dépasse ×3, change de sous-niche.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Dépannage</h2>
+    <p class="muted"><b>« API key not valid »</b> → la clé est mal copiée, ou l'API YouTube Data v3 n'est pas activée sur le projet.</p>
+    <p class="muted"><b>« quotaExceeded »</b> → quota du jour épuisé, reviens demain ou crée un second projet Google.</p>
+    <p class="muted"><b>« Failed to fetch » / erreur réseau</b> → le fichier est probablement ouvert dans un aperçu restreint.
+      Télécharge-le et ouvre-le directement dans Chrome/Safari/Firefox depuis ton disque.</p>
+    <p class="muted"><b>Peu ou pas de résultats</b> → normal et bon signe : les vrais outliers sont rares.
+      Élargis en passant les vues min à 50 000, l'âge à 30 jours, ou coche plus de sous-niches.</p>
+  </div>
+</section>
+
+</div>
+<script>
+"use strict";
+
+/* ══════════════════════════════════════════════════════════════
+   BIBLIOTHÈQUE DE NICHES
+   cat = thématique · sub = sous-niche · fr/en = requêtes envoyées
+   ══════════════════════════════════════════════════════════════ */
+const L = (label, fr, en) => ({ label, fr, en });
+
+const NICHES = [
+{cat:"Finance & Argent", em:"💰", subs:[
+  L("Investissement débutant",["investir en bourse débutant","ETF PEA débutant"],["investing for beginners","ETF portfolio 2026"]),
+  L("Crypto & Web3",["crypto débutant stratégie","bitcoin analyse"],["crypto for beginners","bitcoin strategy"]),
+  L("Business en ligne",["business en ligne débutant","e-commerce sans stock"],["online business beginner","dropshipping case study"]),
+  L("Immobilier & rendement",["investissement locatif rentable","achat immobilier premier"],["real estate investing beginner","rental property analysis"]),
+  L("Économie expliquée",["crise économique expliquée","inflation explication simple"],["economy explained simply","recession explained"]),
+  L("Freelance & side hustle",["devenir freelance revenus","side hustle rentable"],["freelance income","side hustle ideas"]),
+  L("Budget & frugalité",["budget mensuel méthode","économiser argent astuces"],["budgeting method","saving money tips"])]},
+
+{cat:"Tech & IA", em:"🤖", subs:[
+  L("IA générative",["intelligence artificielle outils","prompt IA astuces"],["AI tools workflow","AI prompt tips"]),
+  L("Automatisation no-code",["automatisation no code","automatiser son travail"],["no code automation","automate my workflow"]),
+  L("Gadgets & tests",["test gadget tech","meilleur smartphone rapport qualité"],["tech gadget review","budget tech setup"]),
+  L("Dev & code",["apprendre à coder projet","développeur projet complet"],["coding project tutorial","learn to code project"]),
+  L("Cybersécurité & vie privée",["sécurité informatique astuces","protéger sa vie privée internet"],["cybersecurity tips","online privacy guide"]),
+  L("Setup & productivité PC",["setup bureau optimisé","astuces windows cachées"],["desk setup tour","hidden windows features"])]},
+
+{cat:"Fitness & Santé", em:"🏋️", subs:[
+  L("Musculation maison",["musculation à la maison programme","prise de masse sans salle"],["home workout program","calisthenics transformation"]),
+  L("Perte de poids",["perdre du poids méthode","déficit calorique débutant"],["weight loss method","calorie deficit explained"]),
+  L("Mobilité & posture",["corriger sa posture exercices","souplesse débutant routine"],["fix your posture","mobility routine beginner"]),
+  L("Course à pied",["courir débutant progression","préparation semi marathon"],["running for beginners","marathon training plan"]),
+  L("Sommeil & énergie",["mieux dormir méthode","retrouver de l'énergie fatigue"],["sleep better science","fix your energy levels"]),
+  L("Santé mentale",["gérer son anxiété méthode","burn out témoignage"],["anxiety management","burnout recovery"]),
+  L("Nutrition & compléments",["nutrition sportive base","compléments alimentaires utiles"],["nutrition basics science","supplements worth it"])]},
+
+{cat:"Cuisine & Food", em:"🍳", subs:[
+  L("Recettes express",["recette rapide 15 minutes","repas facile étudiant"],["quick easy recipes","15 minute meals"]),
+  L("Meal prep & batch",["batch cooking semaine","meal prep pas cher"],["meal prep week","cheap meal prep"]),
+  L("Pâtisserie",["recette pâtisserie facile","gâteau maison inratable"],["easy baking recipe","bakery style at home"]),
+  L("Street food & tests",["test street food","meilleur burger test"],["street food tour","food taste test"]),
+  L("Régimes spécifiques",["recette végétarienne protéinée","recette sans gluten facile"],["high protein vegan recipe","gluten free easy recipe"]),
+  L("Pain & fermentation",["pain maison sans machine","levain débutant"],["sourdough beginner","homemade bread no machine"])]},
+
+{cat:"Gaming", em:"🎮", subs:[
+  L("Jeux indés",["jeu indé découverte","pépite jeu indépendant"],["indie game hidden gem","indie game review"]),
+  L("Guides & astuces",["astuces pour progresser jeu","guide débutant jeu"],["pro tips guide game","beginner guide game"]),
+  L("Rétro gaming",["rétro gaming nostalgie","console rétro test"],["retro gaming console","childhood games revisited"]),
+  L("Lore & analyses",["lore expliqué jeu","théorie jeu vidéo"],["game lore explained","video game theory"]),
+  L("Speedrun & défis",["défi jeu vidéo impossible","speedrun explication"],["gaming challenge run","speedrun explained"]),
+  L("Mobile & casual",["meilleur jeu mobile","jeu mobile sans pub"],["best mobile games","mobile game review"])]},
+
+{cat:"Divertissement & Récits", em:"🎬", subs:[
+  L("Faits divers & mystères",["affaire non résolue mystère","disparition inexpliquée"],["unsolved mystery case","strange disappearance"]),
+  L("Mini-documentaires",["documentaire court histoire vraie","enquête incroyable"],["short documentary story","deep dive investigation"]),
+  L("Vidéo-essais pop culture",["analyse film décryptage","pourquoi ce film a marché"],["video essay film","why this movie works"]),
+  L("Histoires vraies",["histoire vraie incroyable","témoignage bouleversant"],["true story incredible","insane true story"]),
+  L("Business stories",["comment cette entreprise a échoué","chute d'une entreprise"],["how this company failed","business collapse story"]),
+  L("Internet & drama",["phénomène internet expliqué","arnaque en ligne enquête"],["internet phenomenon explained","online scam investigation"])]},
+
+{cat:"Développement personnel", em:"🧠", subs:[
+  L("Productivité",["méthode productivité concrète","arrêter de procrastiner"],["productivity system","stop procrastinating"]),
+  L("Habitudes & discipline",["construire une habitude","discipline mentale méthode"],["build a habit science","self discipline method"]),
+  L("Apprentissage rapide",["apprendre vite méthode","mémoriser efficacement"],["learn faster method","memorize anything"]),
+  L("Confiance en soi",["confiance en soi exercices","charisme travailler"],["build confidence","charisma explained"]),
+  L("Relations & social",["améliorer ses relations","communication efficace"],["better relationships advice","communication skills"]),
+  L("Stoïcisme & philosophie",["stoïcisme appliqué","philosophie pour la vie"],["stoicism daily life","philosophy for life"])]},
+
+{cat:"Maison & DIY", em:"🏠", subs:[
+  L("Rénovation",["rénovation avant après","rénover soi même pas cher"],["renovation before after","diy home renovation"]),
+  L("Déco petit budget",["décoration petit budget","aménager petit appartement"],["small apartment makeover","budget home decor"]),
+  L("Bricolage & atelier",["bricolage astuce pro","fabriquer meuble soi même"],["woodworking project","diy furniture build"]),
+  L("Jardinage",["potager débutant","jardin sans entretien"],["beginner vegetable garden","low maintenance garden"]),
+  L("Rangement & organisation",["rangement méthode maison","désencombrer sa maison"],["home organization method","declutter your home"]),
+  L("Tiny house & autonomie",["maison autonome énergie","tiny house visite"],["off grid living","tiny house tour"])]},
+
+{cat:"Voyage & Culture", em:"✈️", subs:[
+  L("Voyage petit budget",["voyager pas cher astuces","voyage petit budget pays"],["travel on a budget","cheap travel hacks"]),
+  L("Expatriation",["s'expatrier pays témoignage","vivre à l'étranger coût"],["moving abroad cost","expat life reality"]),
+  L("Van life & road trip",["van aménagé voyage","road trip itinéraire"],["van life build","road trip itinerary"]),
+  L("Découverte de pays",["pays méconnu découverte","voyage insolite destination"],["underrated country travel","unusual destination"]),
+  L("Histoire & patrimoine",["histoire d'un lieu","patrimoine oublié"],["history of this place","forgotten history"])]},
+
+{cat:"Beauté & Style", em:"👗", subs:[
+  L("Soin de la peau",["routine soin visage","acné solution routine"],["skincare routine science","acne routine"]),
+  L("Maquillage",["maquillage naturel tuto","maquillage débutant"],["natural makeup tutorial","makeup for beginners"]),
+  L("Style homme",["style vestimentaire homme","s'habiller mieux homme"],["mens style guide","dress better men"]),
+  L("Style femme & capsule",["garde robe capsule","style vestimentaire femme"],["capsule wardrobe","style guide women"]),
+  L("Cheveux",["routine cheveux soin","coupe de cheveux tendance"],["hair care routine","haircut trends"])]},
+
+{cat:"Animaux", em:"🐶", subs:[
+  L("Éducation canine",["éducation chien méthode","dressage chiot débutant"],["dog training method","puppy training tips"]),
+  L("Chats",["comprendre son chat comportement","conseils chat propriétaire"],["cat behavior explained","cat owner tips"]),
+  L("Aquariophilie",["aquarium débutant montage","aquascaping débutant"],["aquarium setup beginner","aquascaping tutorial"]),
+  L("Animaux insolites",["animal insolite documentaire","espèce rare découverte"],["rare animal documentary","strange animal facts"]),
+  L("Basse-cour & ferme",["poules élevage débutant","petite ferme autonome"],["backyard chickens","small homestead"])]},
+
+{cat:"Auto & Moto", em:"🚗", subs:[
+  L("Essais auto",["essai voiture avis","voiture occasion à éviter"],["car review honest","used cars to avoid"]),
+  L("Mécanique DIY",["réparer sa voiture soi même","entretien auto astuces"],["diy car repair","car maintenance tips"]),
+  L("Électrique",["voiture électrique vérité","autonomie réelle électrique"],["electric car truth","ev real range test"]),
+  L("Moto",["moto débutant conseils","essai moto avis"],["motorcycle beginner tips","motorcycle review"]),
+  L("Restauration",["restauration voiture ancienne","projet restauration mécanique"],["classic car restoration","barn find restoration"])]},
+
+{cat:"Créatif & Compétences", em:"🎨", subs:[
+  L("Dessin & art digital",["apprendre à dessiner méthode","art digital débutant"],["learn to draw method","digital art beginner"]),
+  L("Musique & production",["production musicale débutant","apprendre un instrument seul"],["music production beginner","learn instrument fast"]),
+  L("Photo & vidéo",["photographie débutant réglages","filmer comme un pro"],["photography beginner settings","cinematic video tips"]),
+  L("Montage vidéo",["montage vidéo astuces","monter plus vite"],["video editing tips","edit faster workflow"]),
+  L("Écriture & storytelling",["écrire une histoire méthode","storytelling technique"],["how to write a story","storytelling technique"])]},
+
+{cat:"Sciences & Éducation", em:"📚", subs:[
+  L("Vulgarisation",["science expliquée simplement","expérience scientifique étonnante"],["science explained simply","amazing science experiment"]),
+  L("Espace",["espace découverte univers","mission spatiale expliquée"],["space discovery explained","space mission breakdown"]),
+  L("Histoire",["histoire méconnue récit","événement historique expliqué"],["forgotten history story","historical event explained"]),
+  L("Langues",["apprendre une langue méthode","parler anglais couramment"],["learn a language method","speak english fluently"]),
+  L("Maths & logique",["mathématiques expliquées","problème logique résolu"],["math explained intuitively","logic puzzle solved"])]},
+
+{cat:"Famille & Lifestyle", em:"👶", subs:[
+  L("Parentalité",["éducation enfant conseils","parentalité positive méthode"],["parenting advice real","positive parenting method"]),
+  L("Minimalisme",["minimalisme mode de vie","vivre avec moins"],["minimalist lifestyle","living with less"]),
+  L("Couple",["relation de couple conseils","communication couple"],["relationship advice real","couple communication"]),
+  L("Vie étudiante",["organisation étudiant méthode","réussir ses études"],["student study method","how to study effectively"]),
+  L("Slow life & routine",["routine matinale réaliste","ralentir son quotidien"],["realistic morning routine","slow living day"])]},
+
+{cat:"Niches curieuses", em:"🔮", subs:[
+  L("Satisfying & ASMR",["vidéo satisfaisante nettoyage","asmr relaxant"],["satisfying cleaning video","asmr relaxing"]),
+  L("Survie & bushcraft",["survie en forêt technique","bushcraft abri construction"],["wilderness survival skill","bushcraft shelter build"]),
+  L("Urbex & lieux abandonnés",["lieu abandonné exploration","urbex découverte"],["abandoned place exploration","urbex discovery"]),
+  L("Restauration d'objets",["restauration objet ancien","nettoyage extrême objet"],["restoration rusty tool","extreme cleaning restoration"]),
+  L("Collections & objets rares",["collection objet rare","trouvaille brocante valeur"],["rare collection find","flea market treasure"]),
+  L("Artisanat & métiers",["métier artisanal fabrication","savoir faire traditionnel"],["traditional craft process","how it's made craft"])]}
+];
+
+/* ══════════════════ ÉTAT & UTILITAIRES ══════════════════ */
+const $  = id => document.getElementById(id);
+const S  = { key:"", vids:[], quota:0, lastScan:null };
+let STOP = false;
+
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c =>
+  ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const fmt = n => n>=1e6 ? (n/1e6).toFixed(n>=1e7?0:1)+"M"
+              : n>=1e3 ? (n/1e3).toFixed(n>=1e5?0:1)+"k" : String(Math.round(n));
+const med = a => { if(!a.length) return 0; const s=[...a].sort((x,y)=>x-y), m=s.length>>1;
+  return s.length%2 ? s[m] : (s[m-1]+s[m])/2; };
+const uniq = a => [...new Set(a)];
+const chunk = (a,n) => { const o=[]; for(let i=0;i<a.length;i+=n) o.push(a.slice(i,i+n)); return o; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const cfg = () => {
+  const [region, lang] = ($("market").value || "|").split("|");
+  return {
+    minViews:+$("minViews").value || 0,
+    maxAge:+$("maxAge").value || 21,
+    maxSubs:+$("maxSubs").value || 0,
+    region, lang, dur:$("dur").value
+  };
+};
+
+function log(msg, cls){
+  const el = $("log");
+  if(el.textContent === "En attente…") el.textContent = "";
+  const d = document.createElement("div");
+  if(cls) d.className = cls;
+  d.innerHTML = msg;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+}
+function go(tab){
+  ["scan","res","niches","idees","aide"].forEach(t=>{
+    $("p-"+t).classList.toggle("on", t===tab);
+    $("t-"+t).classList.toggle("on", t===tab);
+  });
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function saveKey(){
+  S.key = $("apikey").value.trim();
+  try{ localStorage.setItem("ynf_key", S.key); }catch(e){}
+  log(S.key ? "<b>Clé enregistrée.</b>" : "<span class='w'>Clé vidée.</span>");
+}
+
+/* ══════════════════ SÉLECTEUR DE NICHES ══════════════════ */
+function buildPicker(){
+  $("cats").innerHTML = NICHES.map((c,ci)=>`
+    <details class="cat">
+      <summary><span class="em">${c.em}</span>${esc(c.cat)}<span class="n">${c.subs.length}</span></summary>
+      <div class="subs">
+        ${c.subs.map((s,si)=>`<label><input type="checkbox" class="nb" data-c="${ci}" data-s="${si}"
+           onchange="updatePick()"><span>${esc(s.label)}</span></label>`).join("")}
+      </div>
+    </details>`).join("");
+  updatePick();
+}
+const boxes = () => [...document.querySelectorAll(".nb")];
+function updatePick(){
+  const n = boxes().filter(b=>b.checked).length;
+  const extra = ($("customKw").value.trim() ? $("customKw").value.split(",").filter(x=>x.trim()).length : 0);
+  const per = ($("dur").value === "long" ? 202 : 102);
+  const q = (n*2 + extra) * per;
+  $("pickCount").textContent = n + " sous-niche" + (n>1?"s":"") + " · ~" + q.toLocaleString("fr-FR") + " unités de quota";
+}
+function pickNone(){ boxes().forEach(b=>b.checked=false); updatePick(); }
+function pickRandom(n){
+  pickNone();
+  const all = boxes();
+  for(const b of all.map(v=>({v,r:Math.random()})).sort((a,b)=>a.r-b.r).slice(0,n)) b.v.checked = true;
+  all.forEach(b=>{ if(b.checked) b.closest("details").open = true; });
+  updatePick();
+}
+function toggleAll(open){ document.querySelectorAll("details.cat").forEach(d=>d.open=open); }
+
+function selectedQueries(){
+  const { lang } = cfg();
+  const kwLang = lang === "en" ? "en" : "fr";
+  const out = [];
+  boxes().filter(b=>b.checked).forEach(b=>{
+    const c = NICHES[+b.dataset.c], s = c.subs[+b.dataset.s];
+    s[kwLang].forEach(q => out.push({ q, sub:s.label, cat:c.cat, em:c.em }));
+  });
+  $("customKw").value.split(",").map(x=>x.trim()).filter(Boolean)
+    .forEach(q => out.push({ q, sub:q, cat:"Mots-clés perso", em:"✏️" }));
+  return out;
+}
+
+/* ══════════════════ API YOUTUBE ══════════════════ */
+async function api(endpoint, params, cost){
+  const u = new URL("https://www.googleapis.com/youtube/v3/" + endpoint);
+  Object.entries(params).forEach(([k,v]) => { if(v!=="" && v!=null) u.searchParams.set(k,v); });
+  u.searchParams.set("key", S.key);
+  let r;
+  try { r = await fetch(u.toString()); }
+  catch(e){ throw new Error("Réseau bloqué — ouvre le fichier en local dans ton navigateur."); }
+  S.quota += cost;
+  $("quotaTxt").textContent = "Quota consommé cette session : ~" + S.quota.toLocaleString("fr-FR") + " / 10 000";
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok){
+    const m = (j.error && j.error.message) || ("HTTP " + r.status);
+    const reason = j.error && j.error.errors && j.error.errors[0] && j.error.errors[0].reason;
+    throw new Error(reason === "quotaExceeded" ? "Quota Google épuisé pour aujourd'hui." : m);
+  }
+  return j;
+}
+
+const isoSec = d => { const m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(d||"") || [];
+  return (+m[1]||0)*3600 + (+m[2]||0)*60 + (+m[3]||0); };
+
+function score(v, maxAge){
+  const eng = v.likes / Math.max(v.views,1);
+  let s = 16*Math.log10(1+v.mult)          // surperformance vs la chaîne
+        + 15*Math.log10(1+v.vel/3000)       // vitesse d'acquisition
+        + 10*Math.log10(1+v.views/1e5)      // volume absolu
+        + 350*Math.min(eng,0.06)            // engagement (likes / vues)
+        + 6*Math.max(0,(maxAge - v.ageDays)/maxAge);  // fraîcheur
+  return Math.max(0, Math.min(100, Math.round(s)));
+}
+
+/* ══════════════════ SCAN ══════════════════ */
+async function runScan(){
+  S.key = $("apikey").value.trim();
+  if(!S.key){ alert("Colle d'abord ta clé API YouTube en haut de la page (onglet Aide pour l'obtenir)."); return; }
+  saveKey();
+
+  const queries = selectedQueries();
+  if(!queries.length){ alert("Coche au moins une sous-niche, ou saisis un mot-clé personnalisé."); return; }
+
+  const c = cfg();
+  const after = new Date(Date.now() - c.maxAge*864e5).toISOString();
+  STOP = false;
+  $("btnScan").disabled = true; $("btnStop").disabled = false;
+  $("log").textContent = "";
+  log(`<b>Départ</b> — ${queries.length} requêtes · +${fmt(c.minViews)} vues · &lt;${c.maxAge} j · &lt;${fmt(c.maxSubs)} abonnés`);
+
+  const seen = new Map(S.vids.map(v=>[v.id, v]));
+  const chCache = new Map();
+  let done = 0, found = 0;
+
+  for(const item of queries){
+    if(STOP){ log("<span class='w'>Arrêt demandé.</span>"); break; }
+    try{
+      const sr = await api("search", {
+        part:"snippet", q:item.q, type:"video", order:"viewCount", maxResults:50,
+        publishedAfter:after, regionCode:c.region, relevanceLanguage:c.lang,
+        videoDuration: c.dur === "short" ? "short" : c.dur === "long" ? "medium" : ""
+      }, 100);
+
+      let ids = (sr.items||[]).map(i => i.id && i.id.videoId).filter(Boolean);
+
+      // "long" = medium (4-20 min) + long (>20 min) : seconde passe
+      if(c.dur === "long"){
+        const sr2 = await api("search", {
+          part:"snippet", q:item.q, type:"video", order:"viewCount", maxResults:50,
+          publishedAfter:after, regionCode:c.region, relevanceLanguage:c.lang, videoDuration:"long"
+        }, 100);
+        ids = uniq(ids.concat((sr2.items||[]).map(i => i.id && i.id.videoId).filter(Boolean)));
+      }
+
+      const fresh = ids.filter(id => !seen.has(id));
+      if(!fresh.length){ log(`· ${esc(item.q)} — rien de neuf`); done++; $("prog").style.width = (done/queries.length*100)+"%"; continue; }
+
+      // 1) stats des vidéos
+      const vids = [];
+      for(const part of chunk(fresh, 50)){
+        const vr = await api("videos", { part:"snippet,statistics,contentDetails", id:part.join(",") }, 1);
+        vids.push(...(vr.items||[]));
+      }
+      const kept = vids.filter(v=>{
+        const views = +(v.statistics && v.statistics.viewCount || 0);
+        if(views < c.minViews) return false;
+        const sec = isoSec(v.contentDetails && v.contentDetails.duration);
+        if(c.dur === "long"  && sec <= 65) return false;
+        if(c.dur === "short" && sec >  65) return false;
+        return true;
+      });
+      if(!kept.length){ log(`· ${esc(item.q)} — 0 vidéo ≥ ${fmt(c.minViews)} vues`); done++; $("prog").style.width=(done/queries.length*100)+"%"; continue; }
+
+      // 2) stats des chaînes
+      const need = uniq(kept.map(v=>v.snippet.channelId)).filter(id => !chCache.has(id));
+      for(const part of chunk(need, 50)){
+        const cr = await api("channels", { part:"snippet,statistics", id:part.join(",") }, 1);
+        (cr.items||[]).forEach(ch => chCache.set(ch.id, ch));
+      }
+
+      // 3) filtre abonnés + scoring
+      let hits = 0;
+      for(const v of kept){
+        const ch = chCache.get(v.snippet.channelId);
+        if(!ch) continue;
+        const st = ch.statistics || {};
+        if(st.hiddenSubscriberCount) continue;
+        const subs = +(st.subscriberCount || 0);
+        if(subs > c.maxSubs) continue;
+
+        const views   = +(v.statistics.viewCount || 0);
+        const ageDays = Math.max(0.25, (Date.now() - new Date(v.snippet.publishedAt)) / 864e5);
+        const sec     = isoSec(v.contentDetails.duration);
+        const rec = {
+          id:v.id, title:v.snippet.title, chan:ch.snippet.title, chanId:ch.id,
+          subs, views, ageDays,
+          likes:+(v.statistics.likeCount||0), comments:+(v.statistics.commentCount||0),
+          sec, isShort: sec <= 65,
+          thumb:(v.snippet.thumbnails.medium||v.snippet.thumbnails.default||{}).url || "",
+          pub:v.snippet.publishedAt, tags:v.snippet.tags||[],
+          chanVideos:+(st.videoCount||0),
+          cat:item.cat, sub:item.sub, em:item.em, kw:item.q,
+          mult: views / Math.max(subs, 100),
+          vel:  views / ageDays
+        };
+        rec.score = score(rec, c.maxAge);
+        seen.set(rec.id, rec);
+        hits++; found++;
+      }
+      log(hits ? `<b>✓ ${esc(item.q)} — ${hits} outlier${hits>1?"s":""}</b>` : `· ${esc(item.q)} — aucune petite chaîne`);
+    }catch(e){
+      log(`<span class="e">✗ ${esc(item.q)} — ${esc(e.message)}</span>`);
+      if(/[Qq]uota/.test(e.message)) break;
+    }
+    done++;
+    $("prog").style.width = (done/queries.length*100) + "%";
+    S.vids = [...seen.values()];
+    refresh();
+  }
+
+  S.vids = [...seen.values()];
+  S.lastScan = new Date().toISOString();
+  refresh(); save();
+  log(`<b>Terminé — ${found} nouvelle(s) opportunité(s), ${S.vids.length} au total.</b>`);
+  if(found) log("→ Va voir l'onglet <b>Classement des niches</b>.");
+  $("btnScan").disabled = false; $("btnStop").disabled = true;
+  $("prog").style.width = "100%";
+}
+
+function clearAll(){
+  if(!confirm("Effacer tous les résultats ?")) return;
+  S.vids = []; refresh(); save();
+  $("log").textContent = "En attente…"; $("prog").style.width = "0";
+}
+
+/* ══════════════════ RENDU : VIDÉOS ══════════════════ */
+function refresh(){
+  $("c-res").textContent = S.vids.length;
+  $("c-niches").textContent = groupNiches().length;
+  renderResults(); renderNiches(); fillIdeaSelect(); 
+}
+
+function verdict(sc){
+  return sc>=70 ? ["b-hot","🔥 Pépite"]
+       : sc>=52 ? ["b-ok","✅ Solide"]
+       : sc>=34 ? ["b-mid","🟡 À creuser"]
+                : ["b-low","⚪ Faible"];
+}
+
+function renderResults(){
+  const box = $("resArea");
+  if(!S.vids.length){
+    $("stats").innerHTML = "";
+    box.innerHTML = `<div class="card"><div class="empty"><div class="ico">🛰️</div>
+      Aucune vidéo détectée pour l'instant.<br><span class="tiny">Lance une recherche depuis l'onglet Recherche.</span>
+      </div></div>`;
+    return;
+  }
+  const f = $("filterTxt").value.toLowerCase();
+  let list = S.vids.filter(v => !f ||
+    (v.title+" "+v.chan+" "+v.sub+" "+v.cat+" "+v.kw).toLowerCase().includes(f));
+
+  const sorters = {
+    score:(a,b)=>b.score-a.score, mult:(a,b)=>b.mult-a.mult, views:(a,b)=>b.views-a.views,
+    vel:(a,b)=>b.vel-a.vel, subs:(a,b)=>a.subs-b.subs, age:(a,b)=>a.ageDays-b.ageDays
+  };
+  list = [...list].sort(sorters[$("sortBy").value] || sorters.score);
+
+  const all = S.vids;
+  const nb = groupNiches();
+  $("stats").innerHTML = [
+    ["Outliers trouvés", all.length],
+    ["Niches actives", nb.length],
+    ["Multiplicateur médian", "×" + med(all.map(v=>v.mult)).toFixed(1)],
+    ["Vues médianes", fmt(med(all.map(v=>v.views)))],
+    ["Abonnés médians", fmt(med(all.map(v=>v.subs)))],
+    ["Meilleure niche", nb.length ? nb[0].sub : "—"]
+  ].map(([k,v])=>`<div class="stat"><div class="k">${k}</div><div class="v">${esc(String(v))}</div></div>`).join("");
+
+  box.innerHTML = `<div class="tbl-wrap"><table><thead><tr>
+      <th style="width:120px"></th><th>Vidéo</th>
+      <th>Vues</th><th>Abonnés</th><th>Multiplicateur</th><th>Vues / jour</th><th>Publiée</th><th>Score</th><th>Niche</th>
+    </tr></thead><tbody>${list.map(v=>{
+      const [cls,lab] = verdict(v.score);
+      return `<tr>
+        <td><a href="https://www.youtube.com/watch?v=${esc(v.id)}" target="_blank" rel="noopener">
+            <img class="thumb" loading="lazy" src="${esc(v.thumb)}" alt=""></a></td>
+        <td><a class="vt" href="https://www.youtube.com/watch?v=${esc(v.id)}" target="_blank" rel="noopener">${esc(v.title)}</a>
+            <div class="ch">${esc(v.chan)} · ${fmt(v.chanVideos)} vidéos${v.isShort?' · <span class="badge b-short">Short</span>':""}</div></td>
+        <td class="num">${fmt(v.views)}</td>
+        <td class="num">${fmt(v.subs)}</td>
+        <td class="num" style="color:${v.mult>=10?"#ff7089":v.mult>=4?"#2fd47a":"inherit"}">×${v.mult.toFixed(1)}</td>
+        <td class="num">${fmt(v.vel)}</td>
+        <td class="num">il y a ${Math.round(v.ageDays)} j</td>
+        <td><span class="badge ${cls}">${v.score}</span></td>
+        <td class="tiny">${v.em} ${esc(v.sub)}</td>
+      </tr>`;}).join("")}</tbody></table></div>
+    <p class="tiny" style="margin-top:10px">${list.length} vidéo(s) affichée(s)${f?" sur "+all.length:""}.</p>`;
+}
+
+/* ══════════════════ RENDU : NICHES ══════════════════ */
+function groupNiches(){
+  const g = new Map();
+  for(const v of S.vids){
+    const k = v.cat + "›" + v.sub;
+    if(!g.has(k)) g.set(k, { key:k, cat:v.cat, sub:v.sub, em:v.em, vids:[] });
+    g.get(k).vids.push(v);
+  }
+  const out = [...g.values()].map(n=>{
+    const mult = med(n.vids.map(v=>v.mult));
+    const views = med(n.vids.map(v=>v.views));
+    const subs = med(n.vids.map(v=>v.subs));
+    const sc = med(n.vids.map(v=>v.score));
+    n.mult=mult; n.views=views; n.subs=subs; n.medScore=sc;
+    n.nb = n.vids.length;
+    n.best = [...n.vids].sort((a,b)=>b.score-a.score)[0];
+    n.shortShare = n.vids.filter(v=>v.isShort).length / n.nb;
+    n.medSec = med(n.vids.map(v=>v.sec));
+    n.score = Math.max(0, Math.min(100, Math.round(
+      sc*0.58 + Math.min(n.nb,8)*3.2 + 11*Math.log10(1+mult))));
+    return n;
+  });
+  return out.sort((a,b)=>b.score-a.score);
+}
+
+function renderNiches(){
+  const list = groupNiches();
+  const box = $("nicheArea");
+  if(!list.length){
+    box.innerHTML = `<div class="card"><div class="empty"><div class="ico">🏆</div>
+      Le classement apparaîtra après ta première recherche.</div></div>`;
+    return;
+  }
+  box.innerHTML = `<div class="ncards">${list.map((n,i)=>{
+    const [cls,lab] = verdict(n.score);
+    const mins = Math.round(n.medSec/60);
+    return `<div class="ncard ${n.score>=70?"hot":""}">
+      <div class="rank">${i+1}</div>
+      <h4>${n.em} ${esc(n.sub)}</h4>
+      <div class="cat">${esc(n.cat)} · <span class="badge ${cls}">${lab} ${n.score}</span></div>
+      <div class="metrics">
+        <div><div class="mk">Outliers</div><div class="mv">${n.nb}</div></div>
+        <div><div class="mk">Mult. médian</div><div class="mv">×${n.mult.toFixed(1)}</div></div>
+        <div><div class="mk">Vues médianes</div><div class="mv">${fmt(n.views)}</div></div>
+      </div>
+      <div class="tiny" style="margin-bottom:8px">
+        Chaînes à ${fmt(n.subs)} abonnés médians ·
+        format dominant : ${n.shortShare>0.5 ? "Shorts" : (mins<1? "< 1 min" : mins+" min")}
+      </div>
+      <div class="best">Meilleure vidéo · <b>×${n.best.mult.toFixed(1)}</b> en ${Math.round(n.best.ageDays)} j<br>
+        <a href="https://www.youtube.com/watch?v=${esc(n.best.id)}" target="_blank" rel="noopener">${esc(n.best.title)}</a></div>
+      <div class="row" style="margin-top:11px">
+        <button class="sm" onclick="ideasFor(${i})">💡 Idées &amp; titres</button>
+        <button class="sm ghost" onclick="showVideosOf(${i})">Voir les vidéos</button>
+      </div>
+    </div>`;}).join("")}</div>`;
+}
+
+/* ══════════════════ EXPORT ══════════════════ */
+function exportCSV(){
+  if(!S.vids.length){ alert("Rien à exporter."); return; }
+  const cols = ["thematique","sous_niche","mot_cle","titre","chaine","abonnes","vues","multiplicateur",
+                "vues_par_jour","age_jours","likes","commentaires","duree_sec","score","url"];
+  const rows = [...S.vids].sort((a,b)=>b.score-a.score).map(v=>[
+    v.cat, v.sub, v.kw, v.title, v.chan, v.subs, v.views, v.mult.toFixed(2),
+    Math.round(v.vel), v.ageDays.toFixed(1), v.likes, v.comments, v.sec, v.score,
+    "https://www.youtube.com/watch?v="+v.id
+  ]);
+  const csv = "﻿" + [cols, ...rows].map(r =>
+    r.map(x => `"${String(x).replace(/"/g,'""')}"`).join(";")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv;charset=utf-8"}));
+  a.download = "niches-youtube-" + new Date().toISOString().slice(0,10) + ".csv";
+  a.click();
+}
+
+/* ══════════════════ MOTEUR D'IDÉES & DE TITRES ══════════════════ */
+const STOPW = new Set(("le la les de des du un une et à a en pour par sur dans ce cet cette ces que qui quoi dont "+
+ "où avec sans mon ma mes ton ta tes son sa ses nos vos leur leurs nous vous ils elles je tu il elle on au aux "+
+ "est sont été être avoir plus moins très tout tous toute toutes comment pourquoi quand vraiment fait faire ne pas "+
+ "si comme mais ou donc car ai c'est votre notre deux trois pendant avant après voici voilà chose choses fais "+
+ "résultat résultats jours jour mois année années ainsi alors aussi bien beaucoup encore toujours enfin autre "+
+ "autres même autant chaque entre depuis vers selon sous était sera serait peut faut vais veux veut dois doit "+
+ "ceux celle celui cela ça truc trucs vidéo vidéos chaîne abonnés "+
+ "the and or of to in for on with your you my me is are was be how why what when this that it its from at as "+
+ "not but all can do does did done new best top vs video shorts short full part episode here happened actually "+
+ "everything things learned watch watching about after before again still every really thing something someone "+
+ "going make makes made take takes just like more most much into over than then them they their there these "+
+ "those will would should could been being have has had get got").split(/\s+/));
+
+// petits mots autorisés à l'intérieur d'une locution ("prise de masse")
+const JOIN = new Set(["de","du","des","la","le","les","à","au","aux","en","d","l","pour","sans","sur","a",
+  "of","the","for","with","to","in","on","your","my"]);
+
+const POWER_FR = ["erreur","erreurs","secret","secrets","personne","jamais","choquant","vérité","piège","arrêté",
+  "testé","méthode","gratuit","rapide","prouvé","interdit","ignore","ruine","brutal","enfin","facile","pire","seul"];
+const POWER_EN = ["mistake","mistakes","secret","nobody","never","shocking","truth","trap","quit","tested","method",
+  "free","fast","proven","banned","ignore","ruin","brutal","finally","easy","worst","only"];
+
+const ANGLES_FR = ["pour débutants","en 30 jours","sans matériel","avec 0 €","les erreurs classiques",
+  "la méthode rapide","ce que personne ne dit","testé pendant 1 mois","comparatif","avant / après",
+  "le guide complet","routine quotidienne","j'ai arrêté","mythe vs réalité","de zéro à pro",
+  "la checklist","les outils indispensables","un cas concret","en 10 minutes par jour","les pires conseils"];
+const ANGLES_EN = ["for beginners","in 30 days","with no gear","on a zero budget","common mistakes",
+  "the fast method","what nobody tells you","tested for a month","comparison","before / after",
+  "the complete guide","daily routine","I quit","myth vs reality","zero to pro",
+  "the checklist","essential tools","a real case study","10 minutes a day","the worst advice"];
+
+const FORMULAS_FR = [
+ "{t} pendant {d} : voici le résultat",
+ "{t} : {n} erreurs qui ruinent tout (et comment les éviter)",
+ "Personne ne te dit ça sur {t}",
+ "La méthode {t} que 99 % des gens ignorent",
+ "Pourquoi {t} ne marche pas pour toi (la vraie raison)",
+ "{t} : de zéro à résultat en {d}",
+ "{t} : j'ai tout arrêté pendant {d}, voici ce qui a changé",
+ "Le guide {t} que j'aurais voulu avoir au début",
+ "{t} : ce qu'il faut savoir AVANT de commencer",
+ "{t} : comment progresser en 10 minutes par jour",
+ "{t} : {n} choses apprises en {n2} mois",
+ "{t} : le secret que les pros gardent pour eux",
+ "{t} : j'ai analysé {n2} cas, voici le pattern",
+ "{t} en 2026 : ce qui a vraiment changé",
+ "{t} : ne commence PAS avant d'avoir vu ça",
+ "{t} : la méthode paresseuse qui marche mieux",
+ "{t} tous les jours pendant {d} : le vrai résultat",
+ "{t} — le piège dans lequel tout le monde tombe",
+ "{t} : de débutant à expert, la feuille de route",
+ "{n} astuces {t} que j'aurais aimé connaître plus tôt",
+ "J'ai suivi les conseils {t} les plus populaires… grosse erreur",
+ "{t} : pourquoi tout le monde se trompe",
+ "{t} : le vrai coût que personne n'annonce",
+ "{t} expliqué en {n} minutes, une bonne fois pour toutes",
+ "{t} : est-ce que ça marche vraiment ? (test honnête)",
+ "{t} : le plan que j'utiliserais si je repartais de zéro",
+ "{t} : {n} minutes par jour ont suffi (j'ai testé)",
+ "Le pire conseil {t} — et quoi faire à la place"
+];
+const FORMULAS_EN = [
+ "{t} for {d} — here's what happened",
+ "{t}: {n} mistakes that ruin everything (and how to avoid them)",
+ "Nobody tells you this about {t}",
+ "The {t} method 99% of people ignore",
+ "Why {t} isn't working for you (the real reason)",
+ "{t}: from zero to results in {d}",
+ "I quit {t} for {d} — here's what changed",
+ "The {t} guide I wish I had when I started",
+ "{t}: what to know BEFORE you start",
+ "{t}: how to get better in 10 minutes a day",
+ "{t}: {n} things I learned in {n2} months",
+ "{t}: the secret pros keep to themselves",
+ "{t}: I analysed {n2} cases — here's the pattern",
+ "{t} in 2026: what actually changed",
+ "{t}: do NOT start before watching this",
+ "{t}: the lazy method that works better",
+ "{t} every day for {d} — the real result",
+ "{t} — the trap everyone falls into",
+ "{t}: beginner to expert, the full roadmap",
+ "{n} {t} tips I wish I knew earlier",
+ "I followed the most popular {t} advice… big mistake",
+ "{t}: why everyone gets this wrong",
+ "{t}: the real cost nobody talks about",
+ "{t} explained in {n} minutes, once and for all",
+ "{t}: does it actually work? (honest test)",
+ "{t}: the plan I'd use if I started over",
+ "{t}: {n} minutes a day was enough (I tested it)",
+ "The worst {t} advice — and what to do instead"
+];
+
+let IDEA_SEED = 0;
+
+// Renvoie [{k, w, df}] : k = mot ou locution, w = poids, df = nb de titres où il apparaît.
+// Une locution issue d'un seul titre est souvent un fragment de phrase ("couché la méthode") :
+// seul df >= 2 prouve qu'il s'agit d'une vraie formulation récurrente de la niche.
+function keyPhrases(titles){
+  const split = t => t.toLowerCase()
+    .replace(/[|(){}\[\]"'’“”!?.,:;\/\\#@*+–—…]/g," ").split(/\s+/).filter(Boolean);
+  const solid = w => w && w.length >= 4 && !STOPW.has(w) && !JOIN.has(w) && !/^\d+$/.test(w);
+  const w = new Map(), df = new Map();
+  for(const t of titles){
+    const ws = split(t), here = new Set();
+    for(let i=0;i<ws.length;i++){
+      if(!solid(ws[i])) continue;
+      const add = (k, weight) => { w.set(k,(w.get(k)||0)+weight); here.add(k); };
+      add(ws[i], 1);
+      if(solid(ws[i+1]))                             add(ws[i]+" "+ws[i+1], 3);
+      else if(JOIN.has(ws[i+1]) && solid(ws[i+2]))   add(ws[i]+" "+ws[i+1]+" "+ws[i+2], 3);
+    }
+    here.forEach(k => df.set(k, (df.get(k)||0)+1));
+  }
+  return [...w.entries()]
+    .map(([k,ww]) => ({ k, w:ww, df: df.get(k)||1 }))
+    .sort((a,b) => b.df-a.df || b.w-a.w || b.k.length-a.k.length);
+}
+
+function hookScore(t, lang){
+  const pw = lang==="en" ? POWER_EN : POWER_FR;
+  const low = t.toLowerCase();
+  let s = 48;
+  const n = t.length;
+  s += (n>=38 && n<=62) ? 14 : (n>=30 && n<=72) ? 7 : (n>72 ? -6 : 0);
+  if(/\d/.test(t)) s += 10;
+  let hits = 0; pw.forEach(w => { if(low.includes(w) && hits<2){ s += 8; hits++; } });
+  if(/[:—|]/.test(t)) s += 4;
+  if(/^(pourquoi|comment|j'ai|ne |personne|le vrai|why|how|i |nobody|do not|the real)/i.test(t)) s += 6;
+  if(/\(.+\)/.test(t)) s += 5;
+  if(/\b[A-ZÉÈÀÇ]{3,}\b/.test(t)) s += 4;
+  if(/\?$/.test(t)) s += 3;
+  return Math.max(10, Math.min(99, Math.round(s)));
+}
+
+function makeTitles(topic, lang, n){
+  const F = lang==="en" ? FORMULAS_EN : FORMULAS_FR;
+  const durs = lang==="en" ? ["30 days","a month","7 days","a year","90 days"] : ["30 jours","un mois","7 jours","un an","90 jours"];
+  const nums = [3,5,7,9,10,12], nums2 = [6,12,20,50,100];
+  const out = new Set();
+  const order = F.map((f,i)=>({f, r:(Math.sin((i+1)*(IDEA_SEED+1)*12.9898)*43758.5453) % 1}))
+                 .sort((a,b)=>a.r-b.r).map(o=>o.f);
+  let i = 0;
+  for(const f of order){
+    if(out.size >= n) break;
+    const t = f.replace("{t}", topic)
+               .replace("{n2}", String(nums2[(i+IDEA_SEED) % nums2.length]))
+               .replace("{n}", String(nums[(i+IDEA_SEED) % nums.length]))
+               .replace("{d}", durs[(i+IDEA_SEED) % durs.length]);
+    out.add(t.charAt(0).toUpperCase() + t.slice(1));
+    i++;
+  }
+  return [...out].map(t=>({t, h:hookScore(t, lang)})).sort((a,b)=>b.h-a.h);
+}
+
+function fillIdeaSelect(){
+  const sel = $("ideaNiche");
+  if(!sel) return;
+  const prev = sel.value;
+  const res = groupNiches();
+  let html = "";
+  if(res.length){
+    html += `<optgroup label="Tes niches détectées (données réelles)">` +
+      res.map(n=>`<option value="R|${esc(n.key)}">${n.em} ${esc(n.sub)} — score ${n.score}</option>`).join("") +
+      `</optgroup>`;
+  }
+  html += NICHES.map((c,ci)=>`<optgroup label="${esc(c.em+" "+c.cat)}">` +
+    c.subs.map((s,si)=>`<option value="L|${ci}|${si}">${esc(s.label)}</option>`).join("") + `</optgroup>`).join("");
+  sel.innerHTML = html;
+  if(prev && [...sel.options].some(o=>o.value===prev)) sel.value = prev;
+  renderIdeas();
+}
+
+function showVideosOf(i){
+  const n = groupNiches()[i];
+  if(!n) return;
+  $("filterTxt").value = n.sub;
+  go("res"); renderResults();
+}
+
+function ideasFor(i){
+  const n = groupNiches()[i];
+  if(!n) return;
+  const sel = $("ideaNiche");
+  const v = "R|" + n.key;
+  if([...sel.options].some(o=>o.value===v)) sel.value = v;
+  $("ideaTopic").value = "";
+  go("idees"); renderIdeas();
+}
+
+function renderIdeas(force){
+  if(force) IDEA_SEED++;
+  const sel = $("ideaNiche"), box = $("ideaArea");
+  if(!sel || !sel.value){ box.innerHTML = ""; return; }
+  const lang = $("ideaLang").value;
+  const parts = sel.value.split("|");
+  let label, catName, siblings = [], vids = [];
+
+  if(parts[0] === "R"){
+    const n = groupNiches().find(x => x.key === sel.value.slice(2));
+    if(!n){ box.innerHTML = ""; return; }
+    label = n.sub; catName = n.cat; vids = n.vids;
+    const c = NICHES.find(c=>c.cat===n.cat);
+    siblings = c ? c.subs.map(s=>s.label).filter(l=>l!==n.sub) : [];
+  }else{
+    const c = NICHES[+parts[1]], s = c.subs[+parts[2]];
+    label = s.label; catName = c.cat;
+    siblings = c.subs.map(x=>x.label).filter(l=>l!==s.label);
+    vids = S.vids.filter(v=>v.sub === s.label);
+  }
+
+  const custom = $("ideaTopic").value.trim();
+  const topic = (custom || label).toLowerCase();
+  const KP = vids.length ? keyPhrases(vids.map(v=>v.title)) : [];
+  const recurring = KP.filter(x => x.df >= 2);
+  // mots affichés : ce qui revient vraiment ; à défaut, les mots isolés (jamais de fragments)
+  const kws = (recurring.length >= 4 ? recurring : KP.filter(x => !x.k.includes(" ")))
+    .slice(0,12).map(x => x.k);
+
+  // sujets de titres : la niche + les formulations récurrentes réellement observées
+  const subjects = uniq([topic,
+    ...(custom ? [] : recurring.filter(x => x.k.includes(" ")).slice(0,2).map(x => x.k))]);
+  const titles = subjects.flatMap(sj => makeTitles(sj, lang, 12))
+    .filter((x, i, a) => a.findIndex(y => y.t === x.t) === i)
+    .sort((a,b) => b.h - a.h)
+    .slice(0, 18);
+
+  /* --- thèmes connexes --- */
+  const ANG = lang==="en" ? ANGLES_EN : ANGLES_FR;
+  const seeds = uniq([...siblings.slice(0,6), ...kws.slice(0,6)]);
+  const adj = seeds.slice(0,9).map((s,i)=>{
+    const angle = ANG[(i*3 + IDEA_SEED) % ANG.length];
+    const theme = s + " " + angle;
+    const tt = makeTitles(s.toLowerCase(), lang, 3);
+    return { theme, sub:s, angle, title: tt[(IDEA_SEED + i) % tt.length] };
+  });
+
+  /* --- plan de réplication --- */
+  let plan = "";
+  if(vids.length){
+    const medSec = med(vids.map(v=>v.sec));
+    const medViews = med(vids.map(v=>v.views));
+    const medMult = med(vids.map(v=>v.mult));
+    const shortShare = vids.filter(v=>v.isShort).length / vids.length;
+    const refs = [...vids].sort((a,b)=>b.score-a.score).slice(0,4);
+    const pats = titlePatterns(vids.map(v=>v.title));
+    plan = `<div class="card">
+      <h2>Plan de réplication — ${esc(label)}</h2>
+      <div class="stats" style="margin:13px 0">
+        <div class="stat"><div class="k">Format qui gagne</div><div class="v">${shortShare>0.5?"Shorts":(medSec<60?"< 1 min":Math.round(medSec/60)+" min")}</div></div>
+        <div class="stat"><div class="k">Objectif de vues</div><div class="v">${fmt(medViews)}</div></div>
+        <div class="stat"><div class="k">Mult. à viser</div><div class="v">×${medMult.toFixed(1)}</div></div>
+        <div class="stat"><div class="k">Exemples analysés</div><div class="v">${vids.length}</div></div>
+      </div>
+      <h3>Ce que font les titres gagnants</h3>
+      <div class="chips" style="margin-bottom:14px">${pats.map(p=>`<span class="chip on">${esc(p)}</span>`).join("")}</div>
+      <h3>Mots qui reviennent dans cette niche</h3>
+      <div class="chips" style="margin-bottom:14px">${(kws.slice(0,12).map(k=>`<span class="chip">${esc(k)}</span>`).join("")) || '<span class="tiny">—</span>'}</div>
+      <h3>Vidéos de référence à décortiquer</h3>
+      <div class="titles">${refs.map(v=>`<div class="ti">
+        <span class="hook h-hi">×${v.mult.toFixed(0)}</span>
+        <span class="txt"><a href="https://www.youtube.com/watch?v=${esc(v.id)}" target="_blank" rel="noopener">${esc(v.title)}</a>
+        <span class="tiny"> — ${esc(v.chan)}, ${fmt(v.subs)} ab. · ${fmt(v.views)} vues</span></span></div>`).join("")}</div>
+      <div class="note" style="margin-top:14px"><b>Protocole :</b> publie 5 vidéos sur cette sous-niche en 2 semaines,
+        même format et même durée que les références ci-dessus, avec un angle voisin (pas une copie).
+        Si aucune ne dépasse ×3 en 21 jours, passe à la sous-niche suivante du classement.</div>
+    </div>`;
+  }else{
+    plan = `<div class="card"><div class="warnbox">Aucune donnée réelle pour cette niche —
+      les titres ci-dessous sont générés depuis les formules. Lance une recherche sur cette sous-niche
+      pour obtenir le plan de réplication chiffré.</div></div>`;
+  }
+
+  box.innerHTML = plan + `
+    <div class="card">
+      <h2>Titres accrocheurs — ${esc(custom || label)}</h2>
+      <p class="muted">Classés par potentiel de clic (longueur, chiffre, tension, promesse). Clique pour copier.</p>
+      <div class="titles" style="margin-top:13px">${titles.map(t=>`<div class="ti">
+        <span class="hook ${t.h>=78?"h-hi":t.h>=62?"h-md":"h-lo"}">${t.h}</span>
+        <span class="txt">${esc(t.t)}</span>
+        <button class="sm" onclick="copy(this,${esc(JSON.stringify(t.t))})">Copier</button>
+      </div>`).join("")}</div>
+    </div>
+    <div class="card">
+      <h2>Thèmes connexes à explorer</h2>
+      <p class="muted">Sujets voisins dans la même thématique : le meilleur moyen d'élargir sans quitter l'audience.</p>
+      <div class="adj" style="margin-top:13px">${adj.map(a=>`<div class="adjc">
+        <div class="t">${esc(a.sub)}</div>
+        <div class="a"><b>Angle :</b> ${esc(a.angle)}<br><b>Titre :</b> ${esc(a.title.t)}</div>
+      </div>`).join("")}</div>
+    </div>`;
+}
+
+function titlePatterns(titles){
+  const tests = [
+    [/\d/, "Un chiffre dans le titre"],
+    [/\?$/, "Titre sous forme de question"],
+    [/^(comment|how)\b/i, "Format « Comment… »"],
+    [/^(pourquoi|why)\b/i, "Format « Pourquoi… »"],
+    [/\(.+\)/, "Parenthèses (précision qui intrigue)"],
+    [/[:|—-]/, "Deux parties séparées par : ou —"],
+    [/\b(j'ai|i )\b/i, "Récit à la première personne"],
+    [/\b[A-ZÉÈÀÇ]{3,}\b/, "Un mot en MAJUSCULES"],
+    [/\b(jamais|personne|never|nobody|secret|vérité|truth)\b/i, "Promesse d'un secret"],
+    [/\b(vs|contre|comparatif|comparison)\b/i, "Comparaison / duel"],
+    [/\b(erreur|mistake|piège|trap|arrêt)\w*/i, "Mise en garde / erreur"]
+  ];
+  const n = titles.length;
+  return tests.map(([re,lab]) => [titles.filter(t=>re.test(t)).length / n, lab])
+    .filter(([p])=>p >= 0.25)
+    .sort((a,b)=>b[0]-a[0])
+    .map(([p,lab]) => lab + " (" + Math.round(p*100) + " %)")
+    .slice(0,6);
+}
+
+function copy(btn, txt){
+  const done = () => { const o = btn.textContent; btn.textContent = "✓ Copié"; setTimeout(()=>btn.textContent=o, 1200); };
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); done(); }catch(e){ prompt("Copie manuelle :", txt); }
+    ta.remove();
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(fallback);
+  } else fallback();
+}
+
+/* ══════════════════ PERSISTANCE & INIT ══════════════════ */
+function save(){
+  try{
+    localStorage.setItem("ynf_data", JSON.stringify({ vids:S.vids.slice(0,600), at:S.lastScan }));
+    localStorage.setItem("ynf_cfg", JSON.stringify({
+      minViews:$("minViews").value, maxAge:$("maxAge").value, maxSubs:$("maxSubs").value,
+      market:$("market").value, dur:$("dur").value
+    }));
+  }catch(e){}
+}
+function load(){
+  try{
+    S.key = localStorage.getItem("ynf_key") || "";
+    $("apikey").value = S.key;
+    const c = JSON.parse(localStorage.getItem("ynf_cfg") || "null");
+    if(c){ $("minViews").value=c.minViews; $("maxAge").value=c.maxAge; $("maxSubs").value=c.maxSubs;
+           $("market").value=c.market; $("dur").value=c.dur; }
+    const d = JSON.parse(localStorage.getItem("ynf_data") || "null");
+    if(d && d.vids){ S.vids = d.vids; S.lastScan = d.at; }
+  }catch(e){}
+}
+
+buildPicker();
+load();
+refresh();
+["minViews","maxAge","maxSubs","market","dur"].forEach(id => $(id).addEventListener("change", ()=>{ save(); updatePick(); }));
+$("customKw").addEventListener("input", updatePick);
+if(S.vids.length) log(`<b>${S.vids.length} résultat(s)</b> rechargés depuis ta dernière session.`);
+</script>
+</body>
+</html>
