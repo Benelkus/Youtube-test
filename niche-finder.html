@@ -81,18 +81,23 @@ nav.tabs .cnt{display:inline-block;margin-left:7px;background:var(--acc);color:#
 
 /* ---------- niche picker ---------- */
 .cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.cat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.cat>summary{list-style:none;cursor:pointer;padding:11px 13px;display:flex;align-items:center;gap:9px;
+details.cat{background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+details.cat>summary{list-style:none;cursor:pointer;padding:11px 13px;display:flex;align-items:center;gap:9px;
   font-weight:600;font-size:13px;user-select:none}
-.cat>summary::-webkit-details-marker{display:none}
-.cat>summary:hover{background:var(--card2)}
-.cat .em{font-size:17px}
-.cat .n{margin-left:auto;font-size:11px;color:var(--dim2);font-weight:500}
+details.cat>summary::-webkit-details-marker{display:none}
+details.cat>summary:hover{background:var(--card2)}
+details.cat .em{font-size:17px}
+details.cat .n{margin-left:auto;font-size:11px;color:var(--dim2);font-weight:500}
 .subs{padding:4px 10px 10px;display:flex;flex-direction:column;gap:2px}
 .subs label{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--dim);
   padding:5px 6px;border-radius:7px;cursor:pointer}
 .subs label:hover{background:var(--card2);color:var(--txt)}
 .subs input{width:auto;flex:none;margin-top:2px;accent-color:var(--acc)}
+.subs label>span:nth-child(2){flex:1}
+.ftag{flex:none;font-size:10px;padding:1px 7px;border-radius:20px;font-weight:700;white-space:nowrap}
+.f2{background:rgba(155,123,255,.18);color:#b9a2ff}
+.f1{background:rgba(77,155,255,.13);color:#8ab6f0}
+.f0{background:rgba(255,59,92,.13);color:#ff8ca0}
 
 /* ---------- progress ---------- */
 .bar{height:7px;background:var(--bg2);border-radius:20px;overflow:hidden;border:1px solid var(--line)}
@@ -230,6 +235,12 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
           <option value="GB|en">🇬🇧 Royaume-Uni (anglais)</option>
           <option value="|">🌍 Mondial (sans filtre)</option>
         </select></div>
+      <div class="field"><label class="f">Production</label>
+        <select id="faceless" onchange="applyFaceless()">
+          <option value="ok">🎭 Faceless (voix off, mains, écran)</option>
+          <option value="native">🎭 Faceless natif uniquement</option>
+          <option value="all">👤 Peu importe (visage autorisé)</option>
+        </select></div>
       <div class="field"><label class="f">Format</label>
         <select id="dur">
           <option value="long">Vidéos longues (&gt; 60 s)</option>
@@ -252,6 +263,7 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
       <button class="sm" onclick="toggleAll(false)">Tout replier</button>
       <span class="tiny" id="pickCount" style="margin-left:auto"></span>
     </div>
+    <div class="note" id="facelessInfo" style="margin-bottom:13px"></div>
     <div class="cats" id="cats"></div>
     <div class="sep"></div>
     <label class="f">Mots-clés personnalisés (séparés par des virgules)</label>
@@ -376,6 +388,30 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
   </div>
 
   <div class="card">
+    <h2>Mode faceless</h2>
+    <p class="muted">Le sélecteur <b>Production</b> filtre la bibliothèque selon ce qui est tournable
+      sans jamais apparaître à l'écran. Chaque sous-niche porte une pastille :</p>
+    <div class="chips" style="margin:12px 0">
+      <span class="ftag f2">🎭 natif</span><span class="ftag f1">🎙️ voix off</span><span class="ftag f0">👤 à l'écran</span>
+    </div>
+    <p class="muted">
+      <b>🎭 natif</b> — aucun tournage de toi : voix off sur des images, cartes, graphiques, archives.<br>
+      <b>🎙️ voix off</b> — faisable sans visage, mais il y a un tournage : tes mains en plan fixe
+      (cuisine, bricolage), une capture d'écran (tech, montage, gaming), ou un cadrage qui te coupe le visage.<br>
+      <b>👤 à l'écran</b> — ta présence <i>est</i> le contenu (maquillage, coiffure, style vestimentaire).
+      Masquées par défaut.
+    </p>
+    <p class="muted">Chaque thématique a sa recette de tournage, affichée dans
+      l'onglet <b>Idées &amp; titres</b> dès que tu sélectionnes une niche.</p>
+    <div class="warnbox" style="margin-top:12px">
+      <b>Ce que l'outil ne sait pas faire :</b> l'API de YouTube ne donne aucune information sur l'image
+      d'une vidéo. L'outil classe donc la <b>sous-niche</b> (ce que le sujet permet), pas chaque vidéo trouvée.
+      Une vidéo remontée dans une niche 🎭 peut très bien avoir été tournée en facecam — ça ne change rien :
+      c'est le sujet qui est réplicable en faceless, pas sa réalisation.
+    </div>
+  </div>
+
+  <div class="card">
     <h2>Dépannage</h2>
     <p class="muted"><b>« API key not valid »</b> → la clé est mal copiée, ou l'API YouTube Data v3 n'est pas activée sur le projet.</p>
     <p class="muted"><b>« quotaExceeded »</b> → quota du jour épuisé, reviens demain ou crée un second projet Google.</p>
@@ -394,131 +430,143 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
    BIBLIOTHÈQUE DE NICHES
    cat = thématique · sub = sous-niche · fr/en = requêtes envoyées
    ══════════════════════════════════════════════════════════════ */
-const L = (label, fr, en) => ({ label, fr, en });
+// f = tournable sans visage ? 0 = il faut être à l'écran · 1 = voix off / mains / écran · 2 = faceless natif
+const L = (label, fr, en, f) => ({ label, fr, en, f });
 
 const NICHES = [
-{cat:"Finance & Argent", em:"💰", subs:[
-  L("Investissement débutant",["investir en bourse débutant","ETF PEA débutant"],["investing for beginners","ETF portfolio 2026"]),
-  L("Crypto & Web3",["crypto débutant stratégie","bitcoin analyse"],["crypto for beginners","bitcoin strategy"]),
-  L("Business en ligne",["business en ligne débutant","e-commerce sans stock"],["online business beginner","dropshipping case study"]),
-  L("Immobilier & rendement",["investissement locatif rentable","achat immobilier premier"],["real estate investing beginner","rental property analysis"]),
-  L("Économie expliquée",["crise économique expliquée","inflation explication simple"],["economy explained simply","recession explained"]),
-  L("Freelance & side hustle",["devenir freelance revenus","side hustle rentable"],["freelance income","side hustle ideas"]),
-  L("Budget & frugalité",["budget mensuel méthode","économiser argent astuces"],["budgeting method","saving money tips"])]},
+{cat:"Finance & Argent", em:"💰", rec:"Voix off + captures de graphiques et de tableaux, b-roll de banque d'images, chiffres animés à l'écran.", subs:[
+  L("Investissement débutant",["investir en bourse débutant","ETF PEA débutant"],["investing for beginners","ETF portfolio 2026"],2),
+  L("Crypto & Web3",["crypto débutant stratégie","bitcoin analyse"],["crypto for beginners","bitcoin strategy"],2),
+  L("Business en ligne",["business en ligne débutant","e-commerce sans stock"],["online business beginner","dropshipping case study"],1),
+  L("Immobilier & rendement",["investissement locatif rentable","achat immobilier premier"],["real estate investing beginner","rental property analysis"],1),
+  L("Économie expliquée",["crise économique expliquée","inflation explication simple"],["economy explained simply","recession explained"],2),
+  L("Freelance & side hustle",["devenir freelance revenus","side hustle rentable"],["freelance income","side hustle ideas"],1),
+  L("Budget & frugalité",["budget mensuel méthode","économiser argent astuces"],["budgeting method","saving money tips"],2)]},
 
-{cat:"Tech & IA", em:"🤖", subs:[
-  L("IA générative",["intelligence artificielle outils","prompt IA astuces"],["AI tools workflow","AI prompt tips"]),
-  L("Automatisation no-code",["automatisation no code","automatiser son travail"],["no code automation","automate my workflow"]),
-  L("Gadgets & tests",["test gadget tech","meilleur smartphone rapport qualité"],["tech gadget review","budget tech setup"]),
-  L("Dev & code",["apprendre à coder projet","développeur projet complet"],["coding project tutorial","learn to code project"]),
-  L("Cybersécurité & vie privée",["sécurité informatique astuces","protéger sa vie privée internet"],["cybersecurity tips","online privacy guide"]),
-  L("Setup & productivité PC",["setup bureau optimisé","astuces windows cachées"],["desk setup tour","hidden windows features"])]},
+{cat:"Tech & IA", em:"🤖", rec:"Screencast intégral : tu filmes ton écran, tu commentes. Le format le plus simple à produire sans visage.", subs:[
+  L("IA générative",["intelligence artificielle outils","prompt IA astuces"],["AI tools workflow","AI prompt tips"],2),
+  L("Automatisation no-code",["automatisation no code","automatiser son travail"],["no code automation","automate my workflow"],2),
+  L("Gadgets & tests",["test gadget tech","meilleur smartphone rapport qualité"],["tech gadget review","budget tech setup"],1),
+  L("Dev & code",["apprendre à coder projet","développeur projet complet"],["coding project tutorial","learn to code project"],2),
+  L("Cybersécurité & vie privée",["sécurité informatique astuces","protéger sa vie privée internet"],["cybersecurity tips","online privacy guide"],2),
+  L("Setup & productivité PC",["setup bureau optimisé","astuces windows cachées"],["desk setup tour","hidden windows features"],2)]},
 
-{cat:"Fitness & Santé", em:"🏋️", subs:[
-  L("Musculation maison",["musculation à la maison programme","prise de masse sans salle"],["home workout program","calisthenics transformation"]),
-  L("Perte de poids",["perdre du poids méthode","déficit calorique débutant"],["weight loss method","calorie deficit explained"]),
-  L("Mobilité & posture",["corriger sa posture exercices","souplesse débutant routine"],["fix your posture","mobility routine beginner"]),
-  L("Course à pied",["courir débutant progression","préparation semi marathon"],["running for beginners","marathon training plan"]),
-  L("Sommeil & énergie",["mieux dormir méthode","retrouver de l'énergie fatigue"],["sleep better science","fix your energy levels"]),
-  L("Santé mentale",["gérer son anxiété méthode","burn out témoignage"],["anxiety management","burnout recovery"]),
-  L("Nutrition & compléments",["nutrition sportive base","compléments alimentaires utiles"],["nutrition basics science","supplements worth it"])]},
+{cat:"Fitness & Santé", em:"🏋️", rec:"Cadrage au-dessus des épaules coupé, ou démonstration filmée de dos / en plan serré sur le mouvement. Sinon : schémas animés + voix off.", subs:[
+  L("Musculation maison",["musculation à la maison programme","prise de masse sans salle"],["home workout program","calisthenics transformation"],1),
+  L("Perte de poids",["perdre du poids méthode","déficit calorique débutant"],["weight loss method","calorie deficit explained"],1),
+  L("Mobilité & posture",["corriger sa posture exercices","souplesse débutant routine"],["fix your posture","mobility routine beginner"],1),
+  L("Course à pied",["courir débutant progression","préparation semi marathon"],["running for beginners","marathon training plan"],1),
+  L("Sommeil & énergie",["mieux dormir méthode","retrouver de l'énergie fatigue"],["sleep better science","fix your energy levels"],2),
+  L("Santé mentale",["gérer son anxiété méthode","burn out témoignage"],["anxiety management","burnout recovery"],2),
+  L("Nutrition & compléments",["nutrition sportive base","compléments alimentaires utiles"],["nutrition basics science","supplements worth it"],2)]},
 
-{cat:"Cuisine & Food", em:"🍳", subs:[
-  L("Recettes express",["recette rapide 15 minutes","repas facile étudiant"],["quick easy recipes","15 minute meals"]),
-  L("Meal prep & batch",["batch cooking semaine","meal prep pas cher"],["meal prep week","cheap meal prep"]),
-  L("Pâtisserie",["recette pâtisserie facile","gâteau maison inratable"],["easy baking recipe","bakery style at home"]),
-  L("Street food & tests",["test street food","meilleur burger test"],["street food tour","food taste test"]),
-  L("Régimes spécifiques",["recette végétarienne protéinée","recette sans gluten facile"],["high protein vegan recipe","gluten free easy recipe"]),
-  L("Pain & fermentation",["pain maison sans machine","levain débutant"],["sourdough beginner","homemade bread no machine"])]},
+{cat:"Cuisine & Food", em:"🍳", rec:"Plan fixe vertical au-dessus du plan de travail, mains uniquement. C'est la norme du secteur, personne ne remarquera l'absence de visage.", subs:[
+  L("Recettes express",["recette rapide 15 minutes","repas facile étudiant"],["quick easy recipes","15 minute meals"],2),
+  L("Meal prep & batch",["batch cooking semaine","meal prep pas cher"],["meal prep week","cheap meal prep"],2),
+  L("Pâtisserie",["recette pâtisserie facile","gâteau maison inratable"],["easy baking recipe","bakery style at home"],2),
+  L("Street food & tests",["test street food","meilleur burger test"],["street food tour","food taste test"],0),
+  L("Régimes spécifiques",["recette végétarienne protéinée","recette sans gluten facile"],["high protein vegan recipe","gluten free easy recipe"],2),
+  L("Pain & fermentation",["pain maison sans machine","levain débutant"],["sourdough beginner","homemade bread no machine"],2)]},
 
-{cat:"Gaming", em:"🎮", subs:[
-  L("Jeux indés",["jeu indé découverte","pépite jeu indépendant"],["indie game hidden gem","indie game review"]),
-  L("Guides & astuces",["astuces pour progresser jeu","guide débutant jeu"],["pro tips guide game","beginner guide game"]),
-  L("Rétro gaming",["rétro gaming nostalgie","console rétro test"],["retro gaming console","childhood games revisited"]),
-  L("Lore & analyses",["lore expliqué jeu","théorie jeu vidéo"],["game lore explained","video game theory"]),
-  L("Speedrun & défis",["défi jeu vidéo impossible","speedrun explication"],["gaming challenge run","speedrun explained"]),
-  L("Mobile & casual",["meilleur jeu mobile","jeu mobile sans pub"],["best mobile games","mobile game review"])]},
+{cat:"Gaming", em:"🎮", rec:"Capture du jeu + commentaire en voix off. Aucun facecam nécessaire.", subs:[
+  L("Jeux indés",["jeu indé découverte","pépite jeu indépendant"],["indie game hidden gem","indie game review"],2),
+  L("Guides & astuces",["astuces pour progresser jeu","guide débutant jeu"],["pro tips guide game","beginner guide game"],2),
+  L("Rétro gaming",["rétro gaming nostalgie","console rétro test"],["retro gaming console","childhood games revisited"],2),
+  L("Lore & analyses",["lore expliqué jeu","théorie jeu vidéo"],["game lore explained","video game theory"],2),
+  L("Speedrun & défis",["défi jeu vidéo impossible","speedrun explication"],["gaming challenge run","speedrun explained"],2),
+  L("Mobile & casual",["meilleur jeu mobile","jeu mobile sans pub"],["best mobile games","mobile game review"],2)]},
 
-{cat:"Divertissement & Récits", em:"🎬", subs:[
-  L("Faits divers & mystères",["affaire non résolue mystère","disparition inexpliquée"],["unsolved mystery case","strange disappearance"]),
-  L("Mini-documentaires",["documentaire court histoire vraie","enquête incroyable"],["short documentary story","deep dive investigation"]),
-  L("Vidéo-essais pop culture",["analyse film décryptage","pourquoi ce film a marché"],["video essay film","why this movie works"]),
-  L("Histoires vraies",["histoire vraie incroyable","témoignage bouleversant"],["true story incredible","insane true story"]),
-  L("Business stories",["comment cette entreprise a échoué","chute d'une entreprise"],["how this company failed","business collapse story"]),
-  L("Internet & drama",["phénomène internet expliqué","arnaque en ligne enquête"],["internet phenomenon explained","online scam investigation"])]},
+{cat:"Divertissement & Récits", em:"🎬", rec:"Voix off narrative + archives, photos, cartes, extraits sous licence et sous-titres animés.", subs:[
+  L("Faits divers & mystères",["affaire non résolue mystère","disparition inexpliquée"],["unsolved mystery case","strange disappearance"],2),
+  L("Mini-documentaires",["documentaire court histoire vraie","enquête incroyable"],["short documentary story","deep dive investigation"],2),
+  L("Vidéo-essais pop culture",["analyse film décryptage","pourquoi ce film a marché"],["video essay film","why this movie works"],2),
+  L("Histoires vraies",["histoire vraie incroyable","témoignage bouleversant"],["true story incredible","insane true story"],2),
+  L("Business stories",["comment cette entreprise a échoué","chute d'une entreprise"],["how this company failed","business collapse story"],2),
+  L("Internet & drama",["phénomène internet expliqué","arnaque en ligne enquête"],["internet phenomenon explained","online scam investigation"],2)]},
 
-{cat:"Développement personnel", em:"🧠", subs:[
-  L("Productivité",["méthode productivité concrète","arrêter de procrastiner"],["productivity system","stop procrastinating"]),
-  L("Habitudes & discipline",["construire une habitude","discipline mentale méthode"],["build a habit science","self discipline method"]),
-  L("Apprentissage rapide",["apprendre vite méthode","mémoriser efficacement"],["learn faster method","memorize anything"]),
-  L("Confiance en soi",["confiance en soi exercices","charisme travailler"],["build confidence","charisma explained"]),
-  L("Relations & social",["améliorer ses relations","communication efficace"],["better relationships advice","communication skills"]),
-  L("Stoïcisme & philosophie",["stoïcisme appliqué","philosophie pour la vie"],["stoicism daily life","philosophy for life"])]},
+{cat:"Développement personnel", em:"🧠", rec:"Voix off + b-roll cinématique de banque d'images + typographie animée sur les phrases clés.", subs:[
+  L("Productivité",["méthode productivité concrète","arrêter de procrastiner"],["productivity system","stop procrastinating"],1),
+  L("Habitudes & discipline",["construire une habitude","discipline mentale méthode"],["build a habit science","self discipline method"],2),
+  L("Apprentissage rapide",["apprendre vite méthode","mémoriser efficacement"],["learn faster method","memorize anything"],2),
+  L("Confiance en soi",["confiance en soi exercices","charisme travailler"],["build confidence","charisma explained"],1),
+  L("Relations & social",["améliorer ses relations","communication efficace"],["better relationships advice","communication skills"],1),
+  L("Stoïcisme & philosophie",["stoïcisme appliqué","philosophie pour la vie"],["stoicism daily life","philosophy for life"],2)]},
 
-{cat:"Maison & DIY", em:"🏠", subs:[
-  L("Rénovation",["rénovation avant après","rénover soi même pas cher"],["renovation before after","diy home renovation"]),
-  L("Déco petit budget",["décoration petit budget","aménager petit appartement"],["small apartment makeover","budget home decor"]),
-  L("Bricolage & atelier",["bricolage astuce pro","fabriquer meuble soi même"],["woodworking project","diy furniture build"]),
-  L("Jardinage",["potager débutant","jardin sans entretien"],["beginner vegetable garden","low maintenance garden"]),
-  L("Rangement & organisation",["rangement méthode maison","désencombrer sa maison"],["home organization method","declutter your home"]),
-  L("Tiny house & autonomie",["maison autonome énergie","tiny house visite"],["off grid living","tiny house tour"])]},
+{cat:"Maison & DIY", em:"🏠", rec:"Caméra fixe sur l'établi ou la pièce, mains dans le cadre, timelapse pour les longues étapes.", subs:[
+  L("Rénovation",["rénovation avant après","rénover soi même pas cher"],["renovation before after","diy home renovation"],1),
+  L("Déco petit budget",["décoration petit budget","aménager petit appartement"],["small apartment makeover","budget home decor"],2),
+  L("Bricolage & atelier",["bricolage astuce pro","fabriquer meuble soi même"],["woodworking project","diy furniture build"],2),
+  L("Jardinage",["potager débutant","jardin sans entretien"],["beginner vegetable garden","low maintenance garden"],2),
+  L("Rangement & organisation",["rangement méthode maison","désencombrer sa maison"],["home organization method","declutter your home"],2),
+  L("Tiny house & autonomie",["maison autonome énergie","tiny house visite"],["off grid living","tiny house tour"],1)]},
 
-{cat:"Voyage & Culture", em:"✈️", subs:[
-  L("Voyage petit budget",["voyager pas cher astuces","voyage petit budget pays"],["travel on a budget","cheap travel hacks"]),
-  L("Expatriation",["s'expatrier pays témoignage","vivre à l'étranger coût"],["moving abroad cost","expat life reality"]),
-  L("Van life & road trip",["van aménagé voyage","road trip itinéraire"],["van life build","road trip itinerary"]),
-  L("Découverte de pays",["pays méconnu découverte","voyage insolite destination"],["underrated country travel","unusual destination"]),
-  L("Histoire & patrimoine",["histoire d'un lieu","patrimoine oublié"],["history of this place","forgotten history"])]},
+{cat:"Voyage & Culture", em:"✈️", rec:"Plans POV, drone et paysages + voix off en montage. Le visage n'apparaît jamais.", subs:[
+  L("Voyage petit budget",["voyager pas cher astuces","voyage petit budget pays"],["travel on a budget","cheap travel hacks"],2),
+  L("Expatriation",["s'expatrier pays témoignage","vivre à l'étranger coût"],["moving abroad cost","expat life reality"],1),
+  L("Van life & road trip",["van aménagé voyage","road trip itinéraire"],["van life build","road trip itinerary"],1),
+  L("Découverte de pays",["pays méconnu découverte","voyage insolite destination"],["underrated country travel","unusual destination"],2),
+  L("Histoire & patrimoine",["histoire d'un lieu","patrimoine oublié"],["history of this place","forgotten history"],2)]},
 
-{cat:"Beauté & Style", em:"👗", subs:[
-  L("Soin de la peau",["routine soin visage","acné solution routine"],["skincare routine science","acne routine"]),
-  L("Maquillage",["maquillage naturel tuto","maquillage débutant"],["natural makeup tutorial","makeup for beginners"]),
-  L("Style homme",["style vestimentaire homme","s'habiller mieux homme"],["mens style guide","dress better men"]),
-  L("Style femme & capsule",["garde robe capsule","style vestimentaire femme"],["capsule wardrobe","style guide women"]),
-  L("Cheveux",["routine cheveux soin","coupe de cheveux tendance"],["hair care routine","haircut trends"])]},
+{cat:"Beauté & Style", em:"👗", rec:"Difficile sans visage : le résultat sur le corps EST le contenu. À éviter en faceless.", subs:[
+  L("Soin de la peau",["routine soin visage","acné solution routine"],["skincare routine science","acne routine"],0),
+  L("Maquillage",["maquillage naturel tuto","maquillage débutant"],["natural makeup tutorial","makeup for beginners"],0),
+  L("Style homme",["style vestimentaire homme","s'habiller mieux homme"],["mens style guide","dress better men"],0),
+  L("Style femme & capsule",["garde robe capsule","style vestimentaire femme"],["capsule wardrobe","style guide women"],0),
+  L("Cheveux",["routine cheveux soin","coupe de cheveux tendance"],["hair care routine","haircut trends"],0)]},
 
-{cat:"Animaux", em:"🐶", subs:[
-  L("Éducation canine",["éducation chien méthode","dressage chiot débutant"],["dog training method","puppy training tips"]),
-  L("Chats",["comprendre son chat comportement","conseils chat propriétaire"],["cat behavior explained","cat owner tips"]),
-  L("Aquariophilie",["aquarium débutant montage","aquascaping débutant"],["aquarium setup beginner","aquascaping tutorial"]),
-  L("Animaux insolites",["animal insolite documentaire","espèce rare découverte"],["rare animal documentary","strange animal facts"]),
-  L("Basse-cour & ferme",["poules élevage débutant","petite ferme autonome"],["backyard chickens","small homestead"])]},
+{cat:"Animaux", em:"🐶", rec:"L'animal est le sujet à l'écran, tu restes derrière la caméra en voix off.", subs:[
+  L("Éducation canine",["éducation chien méthode","dressage chiot débutant"],["dog training method","puppy training tips"],1),
+  L("Chats",["comprendre son chat comportement","conseils chat propriétaire"],["cat behavior explained","cat owner tips"],2),
+  L("Aquariophilie",["aquarium débutant montage","aquascaping débutant"],["aquarium setup beginner","aquascaping tutorial"],2),
+  L("Animaux insolites",["animal insolite documentaire","espèce rare découverte"],["rare animal documentary","strange animal facts"],2),
+  L("Basse-cour & ferme",["poules élevage débutant","petite ferme autonome"],["backyard chickens","small homestead"],2)]},
 
-{cat:"Auto & Moto", em:"🚗", subs:[
-  L("Essais auto",["essai voiture avis","voiture occasion à éviter"],["car review honest","used cars to avoid"]),
-  L("Mécanique DIY",["réparer sa voiture soi même","entretien auto astuces"],["diy car repair","car maintenance tips"]),
-  L("Électrique",["voiture électrique vérité","autonomie réelle électrique"],["electric car truth","ev real range test"]),
-  L("Moto",["moto débutant conseils","essai moto avis"],["motorcycle beginner tips","motorcycle review"]),
-  L("Restauration",["restauration voiture ancienne","projet restauration mécanique"],["classic car restoration","barn find restoration"])]},
+{cat:"Auto & Moto", em:"🚗", rec:"Plans du véhicule, du moteur et des mains + voix off. Les essais routiers se filment en caméra embarquée.", subs:[
+  L("Essais auto",["essai voiture avis","voiture occasion à éviter"],["car review honest","used cars to avoid"],1),
+  L("Mécanique DIY",["réparer sa voiture soi même","entretien auto astuces"],["diy car repair","car maintenance tips"],2),
+  L("Électrique",["voiture électrique vérité","autonomie réelle électrique"],["electric car truth","ev real range test"],2),
+  L("Moto",["moto débutant conseils","essai moto avis"],["motorcycle beginner tips","motorcycle review"],1),
+  L("Restauration",["restauration voiture ancienne","projet restauration mécanique"],["classic car restoration","barn find restoration"],2)]},
 
-{cat:"Créatif & Compétences", em:"🎨", subs:[
-  L("Dessin & art digital",["apprendre à dessiner méthode","art digital débutant"],["learn to draw method","digital art beginner"]),
-  L("Musique & production",["production musicale débutant","apprendre un instrument seul"],["music production beginner","learn instrument fast"]),
-  L("Photo & vidéo",["photographie débutant réglages","filmer comme un pro"],["photography beginner settings","cinematic video tips"]),
-  L("Montage vidéo",["montage vidéo astuces","monter plus vite"],["video editing tips","edit faster workflow"]),
-  L("Écriture & storytelling",["écrire une histoire méthode","storytelling technique"],["how to write a story","storytelling technique"])]},
+{cat:"Créatif & Compétences", em:"🎨", rec:"Capture d'écran (art digital, montage, MAO) ou plan fixe sur les mains et la feuille.", subs:[
+  L("Dessin & art digital",["apprendre à dessiner méthode","art digital débutant"],["learn to draw method","digital art beginner"],2),
+  L("Musique & production",["production musicale débutant","apprendre un instrument seul"],["music production beginner","learn instrument fast"],2),
+  L("Photo & vidéo",["photographie débutant réglages","filmer comme un pro"],["photography beginner settings","cinematic video tips"],1),
+  L("Montage vidéo",["montage vidéo astuces","monter plus vite"],["video editing tips","edit faster workflow"],2),
+  L("Écriture & storytelling",["écrire une histoire méthode","storytelling technique"],["how to write a story","storytelling technique"],2)]},
 
-{cat:"Sciences & Éducation", em:"📚", subs:[
-  L("Vulgarisation",["science expliquée simplement","expérience scientifique étonnante"],["science explained simply","amazing science experiment"]),
-  L("Espace",["espace découverte univers","mission spatiale expliquée"],["space discovery explained","space mission breakdown"]),
-  L("Histoire",["histoire méconnue récit","événement historique expliqué"],["forgotten history story","historical event explained"]),
-  L("Langues",["apprendre une langue méthode","parler anglais couramment"],["learn a language method","speak english fluently"]),
-  L("Maths & logique",["mathématiques expliquées","problème logique résolu"],["math explained intuitively","logic puzzle solved"])]},
+{cat:"Sciences & Éducation", em:"📚", rec:"Voix off + motion design simple, schémas, images d'archives. Format faceless par excellence.", subs:[
+  L("Vulgarisation",["science expliquée simplement","expérience scientifique étonnante"],["science explained simply","amazing science experiment"],2),
+  L("Espace",["espace découverte univers","mission spatiale expliquée"],["space discovery explained","space mission breakdown"],2),
+  L("Histoire",["histoire méconnue récit","événement historique expliqué"],["forgotten history story","historical event explained"],2),
+  L("Langues",["apprendre une langue méthode","parler anglais couramment"],["learn a language method","speak english fluently"],2),
+  L("Maths & logique",["mathématiques expliquées","problème logique résolu"],["math explained intuitively","logic puzzle solved"],2)]},
 
-{cat:"Famille & Lifestyle", em:"👶", subs:[
-  L("Parentalité",["éducation enfant conseils","parentalité positive méthode"],["parenting advice real","positive parenting method"]),
-  L("Minimalisme",["minimalisme mode de vie","vivre avec moins"],["minimalist lifestyle","living with less"]),
-  L("Couple",["relation de couple conseils","communication couple"],["relationship advice real","couple communication"]),
-  L("Vie étudiante",["organisation étudiant méthode","réussir ses études"],["student study method","how to study effectively"]),
-  L("Slow life & routine",["routine matinale réaliste","ralentir son quotidien"],["realistic morning routine","slow living day"])]},
+{cat:"Famille & Lifestyle", em:"👶", rec:"Voix off + b-roll du quotidien filmé hors-champ, mains et objets plutôt que personnes.", subs:[
+  L("Parentalité",["éducation enfant conseils","parentalité positive méthode"],["parenting advice real","positive parenting method"],1),
+  L("Minimalisme",["minimalisme mode de vie","vivre avec moins"],["minimalist lifestyle","living with less"],2),
+  L("Couple",["relation de couple conseils","communication couple"],["relationship advice real","couple communication"],1),
+  L("Vie étudiante",["organisation étudiant méthode","réussir ses études"],["student study method","how to study effectively"],1),
+  L("Slow life & routine",["routine matinale réaliste","ralentir son quotidien"],["realistic morning routine","slow living day"],1)]},
 
-{cat:"Niches curieuses", em:"🔮", subs:[
-  L("Satisfying & ASMR",["vidéo satisfaisante nettoyage","asmr relaxant"],["satisfying cleaning video","asmr relaxing"]),
-  L("Survie & bushcraft",["survie en forêt technique","bushcraft abri construction"],["wilderness survival skill","bushcraft shelter build"]),
-  L("Urbex & lieux abandonnés",["lieu abandonné exploration","urbex découverte"],["abandoned place exploration","urbex discovery"]),
-  L("Restauration d'objets",["restauration objet ancien","nettoyage extrême objet"],["restoration rusty tool","extreme cleaning restoration"]),
-  L("Collections & objets rares",["collection objet rare","trouvaille brocante valeur"],["rare collection find","flea market treasure"]),
-  L("Artisanat & métiers",["métier artisanal fabrication","savoir faire traditionnel"],["traditional craft process","how it's made craft"])]}
+{cat:"Niches curieuses", em:"🔮", rec:"Le sujet filmé est l'objet lui-même (restauration, ASMR, artisanat) : les mains suffisent.", subs:[
+  L("Satisfying & ASMR",["vidéo satisfaisante nettoyage","asmr relaxant"],["satisfying cleaning video","asmr relaxing"],2),
+  L("Survie & bushcraft",["survie en forêt technique","bushcraft abri construction"],["wilderness survival skill","bushcraft shelter build"],1),
+  L("Urbex & lieux abandonnés",["lieu abandonné exploration","urbex découverte"],["abandoned place exploration","urbex discovery"],1),
+  L("Restauration d'objets",["restauration objet ancien","nettoyage extrême objet"],["restoration rusty tool","extreme cleaning restoration"],2),
+  L("Collections & objets rares",["collection objet rare","trouvaille brocante valeur"],["rare collection find","flea market treasure"],2),
+  L("Artisanat & métiers",["métier artisanal fabrication","savoir faire traditionnel"],["traditional craft process","how it's made craft"],2)]},
+{cat:"Faceless natif", em:"🎭", rec:"Voix off (ou synthèse vocale) + montage d'images, cartes, graphiques et texte animé. Zéro tournage.", subs:[
+  L("Tops & classements",["top 10 classement","classement des meilleurs"],["top 10 ranking","ranked list"],2),
+  L("Faits insolites",["faits insolites incroyables","choses que tu ignorais"],["facts you didn't know","incredible facts"],2),
+  L("Récits & témoignages narrés",["histoire racontée témoignage","récit anonyme incroyable"],["reddit stories narrated","anonymous story narrated"],2),
+  L("Cartes & géopolitique",["géopolitique expliquée carte","conflit expliqué simplement"],["geopolitics explained map","conflict explained simply"],2),
+  L("Explainers animés",["expliqué en animation","comment ça marche animation"],["how it works animation","explained with animation"],2),
+  L("Comparatifs chiffrés",["comparatif complet chiffres","comparaison des tailles"],["size comparison","data comparison"],2),
+  L("Compilations commentées",["compilation commentée","meilleurs moments commentés"],["commentary compilation","best moments explained"],2),
+  L("Motivation & mindset",["discours motivation mentalité","mentalité gagnante"],["motivational speech","winner mindset"],2),
+  L("Fabrication & process",["fabrication usine processus","comment c'est fabriqué"],["how it's made factory","manufacturing process"],2),
+  L("Sommeil & concentration",["histoire pour dormir","musique concentration travail"],["sleep story narrated","focus study music"],2)]}
 ];
 
 /* ══════════════════ ÉTAT & UTILITAIRES ══════════════════ */
@@ -573,11 +621,12 @@ function buildPicker(){
     <details class="cat">
       <summary><span class="em">${c.em}</span>${esc(c.cat)}<span class="n">${c.subs.length}</span></summary>
       <div class="subs">
-        ${c.subs.map((s,si)=>`<label><input type="checkbox" class="nb" data-c="${ci}" data-s="${si}"
-           onchange="updatePick()"><span>${esc(s.label)}</span></label>`).join("")}
+        ${c.subs.map((s,si)=>`<label><input type="checkbox" class="nb" data-c="${ci}" data-s="${si}" data-f="${s.f}"
+           onchange="updatePick()"><span>${esc(s.label)}</span>
+           <span class="ftag f${s.f}">${FTAG[s.f]}</span></label>`).join("")}
       </div>
     </details>`).join("");
-  updatePick();
+  applyFaceless();
 }
 const boxes = () => [...document.querySelectorAll(".nb")];
 function updatePick(){
@@ -587,15 +636,45 @@ function updatePick(){
   const q = (n*2 + extra) * per;
   $("pickCount").textContent = n + " sous-niche" + (n>1?"s":"") + " · ~" + q.toLocaleString("fr-FR") + " unités de quota";
 }
+const FTAG  = ["👤 à l'écran", "🎙️ voix off", "🎭 natif"];
+const FDESC = ["nécessite d'être filmé", "faisable sans visage (voix off, mains ou capture d'écran)",
+               "100 % faceless, aucun tournage de toi"];
+const FHOW  = ["un tournage classique", "de la voix off, tes mains ou une capture d'écran",
+               "de la voix off et du montage d'images"];
+
+function applyFaceless(){
+  const lvl = $("faceless").value;
+  const min = lvl === "native" ? 2 : lvl === "ok" ? 1 : 0;
+  let shown = 0, hidden = 0;
+  document.querySelectorAll(".subs label").forEach(lb=>{
+    const b = lb.querySelector("input"), hide = +b.dataset.f < min;
+    lb.style.display = hide ? "none" : "";
+    if(hide){ if(b.checked) b.checked = false; hidden++; } else shown++;
+  });
+  document.querySelectorAll("details.cat").forEach(d=>{
+    const n = [...d.querySelectorAll(".subs label")].filter(l => l.style.display !== "none").length;
+    d.style.display = n ? "" : "none";
+    d.querySelector(".n").textContent = n;
+  });
+  $("facelessInfo").innerHTML = min === 0
+    ? `Toutes les sous-niches sont affichées, y compris celles qui imposent d'être à l'écran.`
+    : `<b>Mode faceless.</b> ${shown} sous-niches tournables sans jamais te filmer sont affichées,
+       ${hidden} masquées. La pastille indique comment produire : ${FTAG[2]} = aucun tournage,
+       ${FTAG[1]} = voix off, mains ou capture d'écran.`;
+  updatePick();
+}
+
 function pickNone(){ boxes().forEach(b=>b.checked=false); updatePick(); }
 function pickRandom(n){
   pickNone();
-  const all = boxes();
+  const all = boxes().filter(b => b.closest("label").style.display !== "none");
   for(const b of all.map(v=>({v,r:Math.random()})).sort((a,b)=>a.r-b.r).slice(0,n)) b.v.checked = true;
   all.forEach(b=>{ if(b.checked) b.closest("details").open = true; });
   updatePick();
 }
-function toggleAll(open){ document.querySelectorAll("details.cat").forEach(d=>d.open=open); }
+function toggleAll(open){
+  document.querySelectorAll("details.cat").forEach(d=>{ if(d.style.display !== "none") d.open = open; });
+}
 
 function selectedQueries(){
   const { lang } = cfg();
@@ -603,10 +682,10 @@ function selectedQueries(){
   const out = [];
   boxes().filter(b=>b.checked).forEach(b=>{
     const c = NICHES[+b.dataset.c], s = c.subs[+b.dataset.s];
-    s[kwLang].forEach(q => out.push({ q, sub:s.label, cat:c.cat, em:c.em }));
+    s[kwLang].forEach(q => out.push({ q, sub:s.label, cat:c.cat, em:c.em, f:s.f, rec:c.rec }));
   });
   $("customKw").value.split(",").map(x=>x.trim()).filter(Boolean)
-    .forEach(q => out.push({ q, sub:q, cat:"Mots-clés perso", em:"✏️" }));
+    .forEach(q => out.push({ q, sub:q, cat:"Mots-clés perso", em:"✏️", f:1, rec:"" }));
   return out;
 }
 
@@ -729,7 +808,7 @@ async function runScan(){
           thumb:(v.snippet.thumbnails.medium||v.snippet.thumbnails.default||{}).url || "",
           pub:v.snippet.publishedAt, tags:v.snippet.tags||[],
           chanVideos:+(st.videoCount||0),
-          cat:item.cat, sub:item.sub, em:item.em, kw:item.q,
+          cat:item.cat, sub:item.sub, em:item.em, kw:item.q, f:item.f, rec:item.rec,
           mult: views / Math.max(subs, 100),
           vel:  views / ageDays
         };
@@ -823,7 +902,7 @@ function renderResults(){
         <td class="num">${fmt(v.vel)}</td>
         <td class="num">il y a ${Math.round(v.ageDays)} j</td>
         <td><span class="badge ${cls}">${v.score}</span></td>
-        <td class="tiny">${v.em} ${esc(v.sub)}</td>
+        <td class="tiny">${v.em} ${esc(v.sub)}<br><span class="ftag f${v.f==null?1:v.f}">${FTAG[v.f==null?1:v.f]}</span></td>
       </tr>`;}).join("")}</tbody></table></div>
     <p class="tiny" style="margin-top:10px">${list.length} vidéo(s) affichée(s)${f?" sur "+all.length:""}.</p>`;
 }
@@ -845,6 +924,8 @@ function groupNiches(){
     n.nb = n.vids.length;
     n.best = [...n.vids].sort((a,b)=>b.score-a.score)[0];
     n.shortShare = n.vids.filter(v=>v.isShort).length / n.nb;
+    n.f = n.vids[0].f == null ? 1 : n.vids[0].f;
+    n.rec = n.vids[0].rec || "";
     n.medSec = med(n.vids.map(v=>v.sec));
     n.score = Math.max(0, Math.min(100, Math.round(
       sc*0.58 + Math.min(n.nb,8)*3.2 + 11*Math.log10(1+mult))));
@@ -875,7 +956,8 @@ function renderNiches(){
       </div>
       <div class="tiny" style="margin-bottom:8px">
         Chaînes à ${fmt(n.subs)} abonnés médians ·
-        format dominant : ${n.shortShare>0.5 ? "Shorts" : (mins<1? "< 1 min" : mins+" min")}
+        format dominant : ${n.shortShare>0.5 ? "Shorts" : (mins<1? "< 1 min" : mins+" min")}<br>
+        <span class="ftag f${n.f}">${FTAG[n.f]}</span> ${esc(FDESC[n.f])}
       </div>
       <div class="best">Meilleure vidéo · <b>×${n.best.mult.toFixed(1)}</b> en ${Math.round(n.best.ageDays)} j<br>
         <a href="https://www.youtube.com/watch?v=${esc(n.best.id)}" target="_blank" rel="noopener">${esc(n.best.title)}</a></div>
@@ -1143,6 +1225,8 @@ function renderIdeas(force){
 
   /* --- plan de réplication --- */
   let plan = "";
+  const nf   = vids.length && vids[0].f != null ? vids[0].f : facelessOf(parts, label);
+  const nrec = (vids.length && vids[0].rec) || recOf(parts, catName);
   if(vids.length){
     const medSec = med(vids.map(v=>v.sec));
     const medViews = med(vids.map(v=>v.views));
@@ -1169,13 +1253,27 @@ function renderIdeas(force){
         <span class="tiny"> — ${esc(v.chan)}, ${fmt(v.subs)} ab. · ${fmt(v.views)} vues</span></span></div>`).join("")}</div>
       <div class="note" style="margin-top:14px"><b>Protocole :</b> publie 5 vidéos sur cette sous-niche en 2 semaines,
         même format et même durée que les références ci-dessus, avec un angle voisin (pas une copie).
-        Si aucune ne dépasse ×3 en 21 jours, passe à la sous-niche suivante du classement.</div>
+        Si aucune ne dépasse ×3 en 21 jours, passe à la sous-niche suivante du classement.<br>
+        <b>En faceless :</b> ne copie pas le tournage des références, copie leur <i>structure</i> —
+        accroche des 15 premières secondes, ordre des arguments, rythme du montage — et rejoue-la
+        avec ${esc(FHOW[nf])}.</div>
     </div>`;
   }else{
     plan = `<div class="card"><div class="warnbox">Aucune donnée réelle pour cette niche —
       les titres ci-dessous sont générés depuis les formules. Lance une recherche sur cette sous-niche
       pour obtenir le plan de réplication chiffré.</div></div>`;
   }
+
+  // la faisabilité en faceless ne dépend pas d'un scan : toujours affichée
+  plan = `<div class="card">
+      <h2>Tournage sans visage — ${esc(label)}</h2>
+      <div class="${nf===0?"warnbox":"note"}" style="margin-top:12px">
+        <b>${FTAG[nf]}</b> — ${esc(FDESC[nf])}.${nrec ? "<br>" + esc(nrec) : ""}
+      </div>
+      ${nf===0 ? `<p class="muted" style="margin-top:11px">Cette sous-niche repose sur ta présence à l'écran :
+        le résultat visible sur une personne <i>est</i> le contenu. Passe le sélecteur
+        <b>Production</b> en mode faceless dans l'onglet Recherche pour ne plus la voir remonter.</p>` : ""}
+    </div>` + plan;
 
   box.innerHTML = plan + `
     <div class="card">
@@ -1195,6 +1293,16 @@ function renderIdeas(force){
         <div class="a"><b>Angle :</b> ${esc(a.angle)}<br><b>Titre :</b> ${esc(a.title.t)}</div>
       </div>`).join("")}</div>
     </div>`;
+}
+
+// f et recette de tournage, y compris pour une niche choisie dans la bibliothèque sans scan
+function facelessOf(parts, label){
+  for(const c of NICHES) for(const s of c.subs) if(s.label === label) return s.f;
+  return 1;
+}
+function recOf(parts, catName){
+  const c = NICHES.find(c => c.cat === catName);
+  return c ? c.rec : "";
 }
 
 function titlePatterns(titles){
@@ -1239,7 +1347,7 @@ function save(){
     localStorage.setItem("ynf_data", JSON.stringify({ vids:S.vids.slice(0,600), at:S.lastScan }));
     localStorage.setItem("ynf_cfg", JSON.stringify({
       minViews:$("minViews").value, maxAge:$("maxAge").value, maxSubs:$("maxSubs").value,
-      market:$("market").value, dur:$("dur").value
+      market:$("market").value, dur:$("dur").value, faceless:$("faceless").value
     }));
   }catch(e){}
 }
@@ -1249,7 +1357,8 @@ function load(){
     $("apikey").value = S.key;
     const c = JSON.parse(localStorage.getItem("ynf_cfg") || "null");
     if(c){ $("minViews").value=c.minViews; $("maxAge").value=c.maxAge; $("maxSubs").value=c.maxSubs;
-           $("market").value=c.market; $("dur").value=c.dur; }
+           $("market").value=c.market; $("dur").value=c.dur;
+           if(c.faceless) $("faceless").value = c.faceless; }
     const d = JSON.parse(localStorage.getItem("ynf_data") || "null");
     if(d && d.vids){ S.vids = d.vids; S.lastScan = d.at; }
   }catch(e){}
@@ -1257,8 +1366,9 @@ function load(){
 
 buildPicker();
 load();
+applyFaceless();
 refresh();
-["minViews","maxAge","maxSubs","market","dur"].forEach(id => $(id).addEventListener("change", ()=>{ save(); updatePick(); }));
+["minViews","maxAge","maxSubs","market","dur","faceless"].forEach(id => $(id).addEventListener("change", ()=>{ save(); updatePick(); }));
 $("customKw").addEventListener("input", updatePick);
 if(S.vids.length) log(`<b>${S.vids.length} résultat(s)</b> rechargés depuis ta dernière session.`);
 </script>
