@@ -30,21 +30,24 @@ d'une session à l'autre. La durée minimale est ignorée si le format est régl
 
 ## Mode faceless
 
-L'outil part du principe que tu ne te filmes pas. Le sélecteur **Production** filtre la
-bibliothèque, et chaque sous-niche porte une pastille :
+L'outil part du principe que tu ne te filmes pas. Le sélecteur **Production** n'a que deux
+positions : **Faceless** (par défaut) et **Peu importe**, qui lève le filtre. En mode Faceless,
+95 sous-niches sur 101 restent disponibles.
 
-| Pastille | Sens | Exemples |
+Chaque sous-niche garde ensuite une pastille qui **ne filtre rien** : elle dit ce que tu auras
+à produire. La différence tient à une seule question — est-ce que tu sors la caméra ?
+
+| Pastille | Ce que tu produis | Exemples |
 |---|---|---|
-| 🎭 **natif** | aucun tournage de toi : voix off sur images, cartes, graphiques, archives | mystères, vulgarisation, lore, géopolitique, tops |
-| 🎙️ **voix off** | sans visage, mais il y a un tournage : mains en plan fixe, capture d'écran, cadrage qui coupe le visage | cuisine, bricolage, gaming, screencast tech |
-| 👤 **à l'écran** | ta présence *est* le contenu | maquillage, coiffure, style vestimentaire |
+| 🎭 **aucun tournage** | tu ne filmes rien : voix off sur images, cartes, graphiques, archives | mystères, vulgarisation, lore, géopolitique, tops |
+| 🎥 **mains ou écran** | tu filmes, mais jamais ton visage : mains en plan fixe, capture d'écran, cadrage qui coupe au-dessus des épaules | cuisine, bricolage, gaming, screencast tech |
+| 👤 **visage requis** | ta présence *est* le contenu — masquées en mode Faceless | maquillage, coiffure, style vestimentaire |
 
-Par défaut les 👤 sont masquées : 95 sous-niches sur 101 restent disponibles. Chaque
-thématique a sa recette de tournage, affichée dans l'onglet *Idées & titres*.
+Chaque thématique a en plus sa recette de tournage, affichée dans l'onglet *Idées & titres*.
 
 **Limite à connaître :** l'API YouTube ne donne aucune information sur l'image d'une vidéo.
 L'outil classe donc la **sous-niche** — ce que le sujet permet — et non chaque vidéo trouvée.
-Une vidéo remontée dans une niche 🎭 peut avoir été tournée en facecam : c'est le sujet qui
+Une vidéo remontée dans une niche 🎭 peut très bien avoir été tournée en facecam : c'est le sujet qui
 est réplicable en faceless, pas sa réalisation.
 
 ## Utilisation

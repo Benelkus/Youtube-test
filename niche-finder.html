@@ -262,8 +262,7 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
         </select></div>
       <div class="field"><label class="f">Production</label>
         <select id="faceless" onchange="applyFaceless()">
-          <option value="ok">🎭 Faceless (voix off, mains, écran)</option>
-          <option value="native">🎭 Faceless natif uniquement</option>
+          <option value="ok">🎭 Faceless (sans visage)</option>
           <option value="all">👤 Peu importe (visage autorisé)</option>
         </select></div>
       <div class="field"><label class="f">Format</label>
@@ -428,17 +427,18 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
 
   <div class="card">
     <h2>Mode faceless</h2>
-    <p class="muted">Le sélecteur <b>Production</b> filtre la bibliothèque selon ce qui est tournable
-      sans jamais apparaître à l'écran. Chaque sous-niche porte une pastille :</p>
-    <div class="chips" style="margin:12px 0">
-      <span class="ftag f2">🎭 natif</span><span class="ftag f1">🎙️ voix off</span><span class="ftag f0">👤 à l'écran</span>
-    </div>
-    <p class="muted">
-      <b>🎭 natif</b> — aucun tournage de toi : voix off sur des images, cartes, graphiques, archives.<br>
-      <b>🎙️ voix off</b> — faisable sans visage, mais il y a un tournage : tes mains en plan fixe
-      (cuisine, bricolage), une capture d'écran (tech, montage, gaming), ou un cadrage qui te coupe le visage.<br>
-      <b>👤 à l'écran</b> — ta présence <i>est</i> le contenu (maquillage, coiffure, style vestimentaire).
-      Masquées par défaut.
+    <p class="muted">Le sélecteur <b>Production</b> a deux positions : <b>Faceless</b> (par défaut)
+      n'affiche que les sous-niches tournables sans jamais montrer ton visage, <b>Peu importe</b> lève le filtre.</p>
+    <p class="muted">Les sous-niches gardées portent ensuite une pastille qui ne filtre rien : elle te dit
+      seulement <b>ce que tu auras à produire</b>. La différence entre les deux, c'est si tu sors la caméra ou non.</p>
+    <p class="muted" style="margin-top:12px">
+      <span class="ftag f2">🎭 aucun tournage</span> &nbsp;tu ne filmes rien : voix off sur des images,
+      cartes, graphiques, archives. Montage uniquement.<br><br>
+      <span class="ftag f1">🎥 mains ou écran</span> &nbsp;tu filmes, mais jamais ton visage :
+      tes mains en plan fixe (cuisine, bricolage), ton écran en capture (tech, montage, gaming),
+      ou un cadrage qui te coupe au-dessus des épaules.<br><br>
+      <span class="ftag f0">👤 visage requis</span> &nbsp;ta présence <i>est</i> le contenu
+      (maquillage, coiffure, style vestimentaire). Masquées tant que le mode Faceless est actif.
     </p>
     <p class="muted">Chaque thématique a sa recette de tournage, affichée dans
       l'onglet <b>Idées &amp; titres</b> dès que tu sélectionnes une niche.</p>
@@ -699,15 +699,15 @@ function updatePick(){
   const q = (n*2 + extra) * per;
   $("pickCount").textContent = n + " sous-niche" + (n>1?"s":"") + " · ~" + q.toLocaleString("fr-FR") + " unités de quota";
 }
-const FTAG  = ["👤 à l'écran", "🎙️ voix off", "🎭 natif"];
-const FDESC = ["nécessite d'être filmé", "faisable sans visage (voix off, mains ou capture d'écran)",
-               "100 % faceless, aucun tournage de toi"];
+const FTAG  = ["👤 visage requis", "🎥 mains ou écran", "🎭 aucun tournage"];
+const FDESC = ["ta présence à l'écran est le contenu",
+               "tu filmes, mais jamais ton visage : tes mains en plan fixe ou ton écran",
+               "tu ne filmes rien : voix off sur des images, cartes et archives"];
 const FHOW  = ["un tournage classique", "de la voix off, tes mains ou une capture d'écran",
                "de la voix off et du montage d'images"];
 
 function applyFaceless(){
-  const lvl = $("faceless").value;
-  const min = lvl === "native" ? 2 : lvl === "ok" ? 1 : 0;
+  const min = $("faceless").value === "all" ? 0 : 1;
   let shown = 0, hidden = 0;
   document.querySelectorAll(".subs label").forEach(lb=>{
     const b = lb.querySelector("input"), hide = +b.dataset.f < min;
@@ -721,9 +721,10 @@ function applyFaceless(){
   });
   $("facelessInfo").innerHTML = min === 0
     ? `Toutes les sous-niches sont affichées, y compris celles qui imposent d'être à l'écran.`
-    : `<b>Mode faceless.</b> ${shown} sous-niches tournables sans jamais te filmer sont affichées,
-       ${hidden} masquées. La pastille indique comment produire : ${FTAG[2]} = aucun tournage,
-       ${FTAG[1]} = voix off, mains ou capture d'écran.`;
+    : `<b>Mode faceless.</b> ${shown} sous-niches sont tournables sans jamais montrer ton visage,
+       ${hidden} sont masquées. La pastille dit ce que tu auras à produire :
+       <span class="ftag f2">${FTAG[2]}</span> voix off sur des images, tu ne sors pas la caméra ·
+       <span class="ftag f1">${FTAG[1]}</span> tu filmes, mais seulement tes mains ou ton écran.`;
   updatePick();
 }
 
@@ -1432,7 +1433,7 @@ function load(){
            if(c.minDur != null) $("minDur").value = c.minDur;
            setAgeDays(+c.ageDays || 21);
            $("market").value=c.market; $("dur").value=c.dur;
-           if(c.faceless) $("faceless").value = c.faceless; }
+           if(c.faceless) $("faceless").value = (c.faceless === "native" ? "ok" : c.faceless); }
     const d = JSON.parse(localStorage.getItem("ynf_data") || "null");
     if(d && d.vids){ S.vids = d.vids; S.lastScan = d.at; }
   }catch(e){}
