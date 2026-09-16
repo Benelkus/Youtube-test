@@ -217,15 +217,40 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
 <section id="p-scan" class="pane on">
 
   <div class="card">
+    <h2>Recherche directe</h2>
+    <p class="muted">Un mot-clé, les critères ci-dessous, et c'est parti. Pour explorer large,
+      sers-toi de la bibliothèque de niches plus bas.</p>
+    <div class="row" style="margin-top:13px;align-items:flex-end">
+      <div class="field" style="flex:1;min-width:240px">
+        <label class="f">Mot-clé</label>
+        <input id="kw" placeholder="Entrez votre mot-clé" onkeydown="if(event.key==='Enter')quickSearch()">
+      </div>
+      <button class="primary" id="btnQuick" onclick="quickSearch()">🔍 Rechercher</button>
+    </div>
+  </div>
+
+  <div class="card">
     <h2>1. Tes critères</h2>
-    <p class="muted">Les 3 filtres qui définissent un « outlier » : une vidéo qui surperforme massivement sa chaîne.</p>
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-top:14px">
-      <div class="field"><label class="f">Vues minimum</label>
-        <input id="minViews" type="number" value="100000" step="10000" min="1000"></div>
-      <div class="field"><label class="f">Âge max (jours)</label>
-        <input id="maxAge" type="number" value="21" min="1" max="90"></div>
-      <div class="field"><label class="f">Abonnés max</label>
-        <input id="maxSubs" type="number" value="20000" step="1000" min="0"></div>
+    <p class="muted">Les filtres qui définissent un « outlier » : une vidéo qui surperforme massivement sa chaîne.
+      Ils s'appliquent aussi bien à la recherche directe qu'à la bibliothèque.</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(196px,1fr));margin-top:14px">
+      <div class="field"><label class="f">Date de publication (depuis le…)</label>
+        <input id="pubAfter" type="date" onchange="updateAgeHint()">
+        <div class="tiny" style="margin-top:5px">
+          <span id="ageHint"></span>
+          <span style="margin-left:6px">
+            <a href="#" onclick="setAgeDays(7);return false">7 j</a> ·
+            <a href="#" onclick="setAgeDays(14);return false">14 j</a> ·
+            <a href="#" onclick="setAgeDays(21);return false">21 j</a> ·
+            <a href="#" onclick="setAgeDays(30);return false">30 j</a>
+          </span>
+        </div></div>
+      <div class="field"><label class="f">Durée minimale (en secondes)</label>
+        <input id="minDur" type="number" value="60" step="30" min="0" placeholder="Ex: 300"></div>
+      <div class="field"><label class="f">Nombre d'abonnés maximum</label>
+        <input id="maxSubs" type="number" value="20000" step="1000" min="0" placeholder="Ex: 50000"></div>
+      <div class="field"><label class="f">Nombre de vues minimum</label>
+        <input id="minViews" type="number" value="100000" step="10000" min="0" placeholder="Ex: 1000"></div>
       <div class="field"><label class="f">Marché</label>
         <select id="market">
           <option value="FR|fr">🇫🇷 France (français)</option>
@@ -388,6 +413,20 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
   </div>
 
   <div class="card">
+    <h2>Les deux façons de chercher</h2>
+    <p class="muted">
+      <b>Recherche directe</b> — un mot-clé, tu cliques, tu as les outliers. C'est le mode
+      à utiliser quand tu as déjà une idée en tête (~102 unités de quota, 202 en vidéos longues).<br>
+      <b>Bibliothèque de niches</b> — tu coches des sous-niches, l'outil teste 2 mots-clés pour chacune
+      et remplit le classement. C'est le mode exploration, quand tu cherches quoi faire.
+    </p>
+    <p class="muted">Les deux utilisent les mêmes critères. La <b>date de publication</b> est mémorisée
+      en écart (« il y a 21 jours »), pas en date figée : elle reste donc à jour d'une session à l'autre.
+      La <b>durée minimale</b> exclut les Shorts dès qu'elle dépasse 60 secondes ; elle est ignorée
+      si le format est réglé sur « Shorts uniquement ».</p>
+  </div>
+
+  <div class="card">
     <h2>Mode faceless</h2>
     <p class="muted">Le sélecteur <b>Production</b> filtre la bibliothèque selon ce qui est tournable
       sans jamais apparaître à l'écran. Chaque sous-niche porte une pastille :</p>
@@ -418,7 +457,8 @@ kbd{background:var(--bg2);border:1px solid var(--line);border-radius:5px;padding
     <p class="muted"><b>« Failed to fetch » / erreur réseau</b> → le fichier est probablement ouvert dans un aperçu restreint.
       Télécharge-le et ouvre-le directement dans Chrome/Safari/Firefox depuis ton disque.</p>
     <p class="muted"><b>Peu ou pas de résultats</b> → normal et bon signe : les vrais outliers sont rares.
-      Élargis en passant les vues min à 50 000, l'âge à 30 jours, ou coche plus de sous-niches.</p>
+      Élargis en passant les vues min à 50 000, la date de publication à 30 jours en arrière,
+      la durée minimale à 0, ou coche plus de sous-niches.</p>
   </div>
 </section>
 
@@ -583,15 +623,38 @@ const med = a => { if(!a.length) return 0; const s=[...a].sort((x,y)=>x-y), m=s.
 const uniq = a => [...new Set(a)];
 const chunk = (a,n) => { const o=[]; for(let i=0;i<a.length;i+=n) o.push(a.slice(i,i+n)); return o; };
 const pick = a => a[Math.floor(Math.random()*a.length)];
+const ymd = d => d.getFullYear() + "-" +
+  String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+
 const cfg = () => {
   const [region, lang] = ($("market").value || "|").split("|");
+  const v = $("pubAfter").value;
+  const after = v ? new Date(v + "T00:00:00") : new Date(Date.now() - 21*864e5);
   return {
     minViews:+$("minViews").value || 0,
-    maxAge:+$("maxAge").value || 21,
     maxSubs:+$("maxSubs").value || 0,
+    minDur:+$("minDur").value || 0,
+    after: after.toISOString(),
+    maxAge: Math.max(0.5, (Date.now() - after.getTime()) / 864e5),
     region, lang, dur:$("dur").value
   };
 };
+
+// La date affichée est toujours relative à aujourd'hui : c'est l'écart en jours
+// qui est mémorisé, sinon la fenêtre se périmerait d'une session à l'autre.
+const midnight = () => { const x = new Date(); x.setHours(0,0,0,0); return x; };
+
+function setAgeDays(d){
+  const x = midnight(); x.setDate(x.getDate() - d);
+  $("pubAfter").value = ymd(x);
+  updateAgeHint();
+}
+function updateAgeHint(){
+  const v = $("pubAfter").value;
+  const n = v ? Math.round((midnight() - new Date(v + "T00:00:00")) / 864e5) : 0;
+  $("ageHint").textContent = !v ? "" : n <= 0 ? "aujourd'hui" : "il y a " + n + " jour" + (n>1?"s":"");
+  save();
+}
 
 function log(msg, cls){
   const el = $("log");
@@ -722,20 +785,27 @@ function score(v, maxAge){
 }
 
 /* ══════════════════ SCAN ══════════════════ */
-async function runScan(){
+function quickSearch(){
+  const q = $("kw").value.trim();
+  if(!q){ alert("Saisis un mot-clé."); $("kw").focus(); return; }
+  runScan([{ q, sub:q, cat:"Recherche directe", em:"🔍", f:1, rec:"" }]);
+}
+
+async function runScan(queries){
   S.key = $("apikey").value.trim();
   if(!S.key){ alert("Colle d'abord ta clé API YouTube en haut de la page (onglet Aide pour l'obtenir)."); return; }
   saveKey();
 
-  const queries = selectedQueries();
-  if(!queries.length){ alert("Coche au moins une sous-niche, ou saisis un mot-clé personnalisé."); return; }
+  if(!Array.isArray(queries)) queries = selectedQueries();
+  if(!queries.length){ alert("Saisis un mot-clé, ou coche au moins une sous-niche."); return; }
 
   const c = cfg();
-  const after = new Date(Date.now() - c.maxAge*864e5).toISOString();
+  const after = c.after;
   STOP = false;
-  $("btnScan").disabled = true; $("btnStop").disabled = false;
+  $("btnScan").disabled = true; $("btnQuick").disabled = true; $("btnStop").disabled = false;
   $("log").textContent = "";
-  log(`<b>Départ</b> — ${queries.length} requêtes · +${fmt(c.minViews)} vues · &lt;${c.maxAge} j · &lt;${fmt(c.maxSubs)} abonnés`);
+  log(`<b>Départ</b> — ${queries.length} requête(s) · +${fmt(c.minViews)} vues · depuis le ${$("pubAfter").value}`
+    + ` · &lt;${fmt(c.maxSubs)} abonnés` + (c.dur === "short" ? " · Shorts" : ` · ≥ ${c.minDur} s`));
 
   const seen = new Map(S.vids.map(v=>[v.id, v]));
   const chCache = new Map();
@@ -774,9 +844,8 @@ async function runScan(){
         const views = +(v.statistics && v.statistics.viewCount || 0);
         if(views < c.minViews) return false;
         const sec = isoSec(v.contentDetails && v.contentDetails.duration);
-        if(c.dur === "long"  && sec <= 65) return false;
-        if(c.dur === "short" && sec >  65) return false;
-        return true;
+        if(c.dur === "short") return sec <= 65;
+        return sec >= Math.max(c.minDur, c.dur === "long" ? 61 : 0);
       });
       if(!kept.length){ log(`· ${esc(item.q)} — 0 vidéo ≥ ${fmt(c.minViews)} vues`); done++; $("prog").style.width=(done/queries.length*100)+"%"; continue; }
 
@@ -832,7 +901,7 @@ async function runScan(){
   refresh(); save();
   log(`<b>Terminé — ${found} nouvelle(s) opportunité(s), ${S.vids.length} au total.</b>`);
   if(found) log("→ Va voir l'onglet <b>Classement des niches</b>.");
-  $("btnScan").disabled = false; $("btnStop").disabled = true;
+  $("btnScan").disabled = false; $("btnQuick").disabled = false; $("btnStop").disabled = true;
   $("prog").style.width = "100%";
 }
 
@@ -1342,11 +1411,14 @@ function copy(btn, txt){
 }
 
 /* ══════════════════ PERSISTANCE & INIT ══════════════════ */
+let READY = false;   // les initialisations déclenchent des change/save : ne rien écrire avant load()
 function save(){
+  if(!READY) return;
   try{
     localStorage.setItem("ynf_data", JSON.stringify({ vids:S.vids.slice(0,600), at:S.lastScan }));
     localStorage.setItem("ynf_cfg", JSON.stringify({
-      minViews:$("minViews").value, maxAge:$("maxAge").value, maxSubs:$("maxSubs").value,
+      minViews:$("minViews").value, maxSubs:$("maxSubs").value, minDur:$("minDur").value,
+      ageDays: Math.max(1, Math.round((midnight() - new Date(($("pubAfter").value || ymd(midnight())) + "T00:00:00"))/864e5)),
       market:$("market").value, dur:$("dur").value, faceless:$("faceless").value
     }));
   }catch(e){}
@@ -1356,7 +1428,9 @@ function load(){
     S.key = localStorage.getItem("ynf_key") || "";
     $("apikey").value = S.key;
     const c = JSON.parse(localStorage.getItem("ynf_cfg") || "null");
-    if(c){ $("minViews").value=c.minViews; $("maxAge").value=c.maxAge; $("maxSubs").value=c.maxSubs;
+    if(c){ $("minViews").value=c.minViews; $("maxSubs").value=c.maxSubs;
+           if(c.minDur != null) $("minDur").value = c.minDur;
+           setAgeDays(+c.ageDays || 21);
            $("market").value=c.market; $("dur").value=c.dur;
            if(c.faceless) $("faceless").value = c.faceless; }
     const d = JSON.parse(localStorage.getItem("ynf_data") || "null");
@@ -1365,10 +1439,12 @@ function load(){
 }
 
 buildPicker();
+setAgeDays(21);
 load();
 applyFaceless();
 refresh();
-["minViews","maxAge","maxSubs","market","dur","faceless"].forEach(id => $(id).addEventListener("change", ()=>{ save(); updatePick(); }));
+READY = true;
+["minViews","maxSubs","minDur","pubAfter","market","dur","faceless"].forEach(id => $(id).addEventListener("change", ()=>{ save(); updatePick(); }));
 $("customKw").addEventListener("input", updatePick);
 if(S.vids.length) log(`<b>${S.vids.length} résultat(s)</b> rechargés depuis ta dernière session.`);
 </script>

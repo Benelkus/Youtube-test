@@ -4,15 +4,29 @@ Outil de détection de niches YouTube à fort potentiel. Il cherche les **outlie
 des vidéos qui explosent alors que la chaîne qui les publie est encore petite —
 le signal le plus fiable qu'une niche a de la demande non servie.
 
-## Les 3 critères
+## Deux façons de chercher
 
-| Critère | Valeur par défaut | Pourquoi |
+**Recherche directe** — un mot-clé, un bouton, les outliers. Le mode à utiliser quand tu as
+déjà une idée en tête.
+
+**Bibliothèque de niches** — tu coches des sous-niches, l'outil teste 2 mots-clés pour chacune
+et remplit le classement. Le mode exploration.
+
+Les deux partagent les mêmes critères.
+
+## Les critères
+
+| Champ | Défaut | Pourquoi |
 |---|---|---|
-| Vues minimum | **100 000** | preuve qu'il y a une audience réelle |
-| Âge maximum | **21 jours** | la tendance est encore vivante, réplicable maintenant |
-| Abonnés de la chaîne | **< 20 000** | la vidéo a percé grâce au sujet, pas grâce à la notoriété |
+| Nombre de vues minimum | **100 000** | preuve qu'il y a une audience réelle |
+| Date de publication (depuis le…) | **il y a 21 jours** | la tendance est encore vivante, réplicable maintenant |
+| Nombre d'abonnés maximum | **20 000** | la vidéo a percé grâce au sujet, pas grâce à la notoriété |
+| Durée minimale (en secondes) | **60** | exclut les Shorts ; monte à 300 pour ne viser que le format long |
 
-Les trois sont modifiables dans l'interface.
+Tous sont modifiables. La date se règle au calendrier ou via les raccourcis 7 / 14 / 21 / 30 j ;
+elle est mémorisée en **écart** (« il y a 21 jours ») et non en date figée, pour rester à jour
+d'une session à l'autre. La durée minimale est ignorée si le format est réglé sur
+« Shorts uniquement ».
 
 ## Mode faceless
 
