@@ -160,11 +160,20 @@ Règles strictes :
 - les extraits ne doivent pas se chevaucher ;
 - le score (0 à 100) est le potentiel viral réel : sois exigeant, 90+ seulement pour l'exceptionnel.
 
+Pour chaque extrait, écris aussi les textes de publication YouTube, TOUJOURS EN {meta_lang}, \
+quelle que soit la langue de la vidéo :
+- "title" : un vrai titre de Short, 40 à 70 caractères, qui donne envie de cliquer : chiffre frappant, \
+contraste, enjeu ou curiosité (exemple de style : "This $1 Laser Shot Destroys a $100,000 Drone"). \
+Jamais une phrase recopiée de la transcription, pas de guillemets, pas de hashtag, rien de faux \
+par rapport au contenu ; en anglais, majuscule aux mots importants (Title Case) ;
+- "description" : 2 phrases qui posent le contexte et donnent envie de regarder jusqu'au bout ;
+- "hashtags" : 3 à 5 hashtags précis sur le sujet (pas #shorts, il est ajouté automatiquement).
+
 Réponds UNIQUEMENT avec ce JSON :
-{{"clips": [{{"start_id": 12, "end_id": 19, "title": "titre accrocheur de 60 caractères max", \
-"description": "1 à 2 phrases pour la description du Short", "hashtags": ["#defense", "#militaire"], \
-"score": 78, "reason": "pourquoi ce moment fonctionne"}}]}}
-Le titre, la description et les hashtags sont dans la langue de la vidéo."""
+{{"clips": [{{"start_id": 12, "end_id": 19, "title": "...", "description": "...", \
+"hashtags": ["#...", "#..."], "score": 78, "reason": "pourquoi ce moment fonctionne (en français)"}}]}}"""
+
+META_LANGS = {"en": "ANGLAIS", "fr": "FRANÇAIS", "es": "ESPAGNOL", "de": "ALLEMAND"}
 
 
 def _windows(sents: list[dict], span: float = 300.0, step: float = 240.0) -> list[list[dict]]:
@@ -189,8 +198,8 @@ def _score(value) -> float:
 
 
 def llm_candidates(sents: list[dict], model: str, video_title: str, count: int,
-                   min_d: float, max_d: float, cache: Path, log) -> list[dict]:
-    key = {"model": model, "min": min_d, "max": max_d, "count": count,
+                   min_d: float, max_d: float, cache: Path, log, meta_lang: str = "en") -> list[dict]:
+    key = {"model": model, "min": min_d, "max": max_d, "count": count, "meta_lang": meta_lang,
            "transcript": hashlib.sha1("".join(s["text"] for s in sents).encode()).hexdigest()[:12]}
     if cache.exists():
         data = json.loads(cache.read_text())
@@ -199,7 +208,8 @@ def llm_candidates(sents: list[dict], model: str, video_title: str, count: int,
 
     windows = _windows(sents)
     per_window = max(3, math.ceil(count * 2.5 / max(1, len(windows))))
-    system = SYSTEM_PROMPT.format(min_d=int(min_d), max_d=int(max_d))
+    system = SYSTEM_PROMPT.format(min_d=int(min_d), max_d=int(max_d),
+                                  meta_lang=META_LANGS.get(meta_lang, meta_lang.upper()))
     clips: list[dict] = []
     for n, win in enumerate(windows, 1):
         log(f"   LLM : fenêtre {n}/{len(windows)} ({_fmt(win[0]['s'])} → {_fmt(win[-1]['e'])})")
@@ -224,7 +234,7 @@ def llm_candidates(sents: list[dict], model: str, video_title: str, count: int,
                 tags = tags.split()
             clips.append({
                 "i": i, "j": j,
-                "title": str(c.get("title", "")).strip()[:90],
+                "title": str(c.get("title", "")).strip().strip('"«»“”')[:100],
                 "description": str(c.get("description", "")).strip(),
                 "hashtags": [t if t.startswith("#") else "#" + t for t in map(str, tags) if t][:6],
                 "llm": _score(c.get("score")),
@@ -323,7 +333,7 @@ def score_and_select(clips: list[dict], energy: np.ndarray, cuts: list[float],
 
 def find_moments(words: list[dict], duration: float, energy: np.ndarray, cuts: list[float],
                  *, count: int, min_d: float, max_d: float, model: str | None,
-                 video_title: str, workdir: Path, log) -> list[dict]:
+                 video_title: str, workdir: Path, log, meta_lang: str = "en") -> list[dict]:
     sents = build_sentences(words)
     if not sents:
         raise RuntimeError("La transcription est vide : aucune parole détectée dans la vidéo.")
@@ -334,7 +344,7 @@ def find_moments(words: list[dict], duration: float, energy: np.ndarray, cuts: l
         try:
             llm.check(model)
             raw = llm_candidates(sents, model, video_title, count, min_d, max_d,
-                                 workdir / f"llm_{re.sub(r'[^A-Za-z0-9]+', '_', model)}.json", log)
+                                 workdir / f"llm_{re.sub(r'[^A-Za-z0-9]+', '_', model)}.json", log, meta_lang)
             llm_weight = 0.7
         except llm.LLMUnavailable as exc:
             log(f"   ⚠️  {exc}\n   → sélection heuristique (sans IA) à la place.")

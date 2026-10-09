@@ -46,11 +46,24 @@ Une fenêtre Terminal affiche la progression. À la fin, le dossier des Shorts s
 Les Shorts arrivent dans `shorts/<titre-de-la-vidéo>/` :
 
 ```
-01_le-missile-que-personne-ne-peut-arreter.mp4   ← classés du meilleur au moins bon
-02_…
-shorts.md     ← titre, description, hashtags et explication pour chaque Short
+This $1 Laser Shot Destroys a $100,000 Drone.mp4   ← le nom du fichier EST le titre YouTube
+…
+publier.html  ← titres et descriptions avec un bouton « Copier »
+shorts.md     ← classement, score et raison de chaque choix
 shorts.json
 ```
+
+## Publier sur YouTube
+
+1. Glisse la vidéo dans YouTube Studio : **le titre se remplit tout seul** (YouTube reprend le
+   nom du fichier).
+2. Dans `publier.html` (qui s'ouvre à la fin), clique sur **Copier** à côté de la description et
+   colle-la. Elle contient le texte, le lien vers la vidéo complète (si tu as donné une URL)
+   et les hashtags dont `#shorts`.
+
+Les titres et descriptions sont écrits **en anglais**, quelle que soit la langue de la vidéo,
+avec un style de titre de Short (chiffre frappant, contraste, curiosité).
+Pour les avoir en français : `--meta-lang fr`.
 
 Compte quelques minutes pour une vidéo de 20-30 min sur une puce M5.
 Relancer sur la même vidéo est quasi instantané : transcription et analyse sont gardées en cache.
@@ -85,7 +98,8 @@ Chaque Short commence et finit sur une **phrase complète**, avec une **durée v
 | `-n 15` | générer 15 Shorts au lieu de 10, pour avoir du choix |
 | `--min 15 --max 90` | durées minimale et maximale (en secondes) |
 | `--layout crop` | plein écran recadré |
-| `--open` | ouvrir le dossier des Shorts dans le Finder à la fin |
+| `--meta-lang fr` | titres et descriptions en français (anglais par défaut) |
+| `--open` | ouvrir le dossier des Shorts et la page `publier.html` à la fin |
 | `--plan-only` | afficher les moments choisis sans monter les vidéos (rapide, pour vérifier) |
 | `--no-title` | pas de titre incrusté en haut |
 | `--no-subs` | pas de sous-titres |

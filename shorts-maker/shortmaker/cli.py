@@ -11,7 +11,7 @@ import time
 import unicodedata
 from pathlib import Path
 
-from . import analyze, media, render, source, subtitles, transcribe
+from . import analyze, media, publish, render, source, subtitles, transcribe
 
 ROOT = Path(__file__).resolve().parent.parent
 MODEL_FILE = ROOT / ".ollama_model"  # écrit par install.sh selon la RAM du Mac
@@ -47,6 +47,8 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
                    help="blur = image entière sur fond flouté (défaut) ; crop = plein écran recadré au centre")
     p.add_argument("--lang", default="auto",
                    help="langue parlée : auto (défaut, détectée), en, fr… — les sous-titres restent dans cette langue")
+    p.add_argument("--meta-lang", default="en",
+                   help="langue des titres et descriptions YouTube (défaut : en = anglais ; fr, es…)")
     p.add_argument("--model", default=DEFAULT_MODEL, help=f"modèle Ollama (défaut : {DEFAULT_MODEL})")
     p.add_argument("--no-ai", action="store_true", help="sélection sans LLM (heuristique seule)")
     p.add_argument("--whisper-model", default=None, help="modèle Whisper (défaut : large-v3-turbo)")
@@ -115,16 +117,23 @@ def main(argv: list[str] | None = None) -> int:
             words, info["duration"], energy, cuts,
             count=args.count, min_d=args.min_d, max_d=args.max_d,
             model=None if args.no_ai else args.model,
-            video_title=title, workdir=work, log=log,
+            video_title=title, workdir=work, log=log, meta_lang=args.meta_lang,
         )
         if not moments:
             raise RuntimeError("Aucun moment exploitable trouvé. Essaie --min plus petit.")
 
         out_dir = Path(args.output).expanduser().resolve() / slug(title, 60)
         out_dir.mkdir(parents=True, exist_ok=True)
+        source_url = args.input if source.is_url(args.input) else None
+        used: set[str] = set()
         for rank, m in enumerate(moments, 1):
             m["rank"] = rank
-            m["file"] = f"{rank:02d}_{slug(m['title'] or m['text'][:50])}.mp4"
+            if not m["title"]:
+                m["title"] = analyze._short_title(m["text"])
+            m["yt_title"] = m["title"][:100]
+            # Le nom du fichier = le titre : YouTube Studio le reprend tel quel à l'import
+            m["file"] = publish.file_title(m["yt_title"], used)
+            m["yt_description"] = publish.build_description(m, source_url, args.meta_lang)
             log(f"   #{rank:02d} {fmt(m['start'])}→{fmt(m['end'])} ({m['end'] - m['start']:.0f}s)"
                 f"  score {m['score']:.0f}  {m['title']}")
 
@@ -147,10 +156,12 @@ def main(argv: list[str] | None = None) -> int:
                                    encoder=encoder, has_audio=info["has_audio"])
 
         write_report(out_dir, title, args.input, moments)
+        page = publish.write_page(out_dir, title, moments)
         log(f"\n✅ Terminé en {fmt(time.time() - t0)} → {out_dir}")
-        log("   Titres, descriptions et hashtags : shorts.md")
+        log("   Titres et descriptions à copier : publier.html")
         if args.open and sys.platform == "darwin":
             subprocess.run(["open", str(out_dir)])
+            subprocess.run(["open", str(page)])
         return 0
     except KeyboardInterrupt:
         log("\nInterrompu.")
@@ -161,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def write_report(out_dir: Path, title: str, origin: str, moments: list[dict]) -> None:
-    keep = ("rank", "file", "start", "end", "title", "description", "hashtags",
+    keep = ("rank", "file", "start", "end", "yt_title", "yt_description", "hashtags",
             "score", "llm", "dynamic", "loudness_db", "cuts_per_min", "reason", "text")
     (out_dir / "shorts.json").write_text(json.dumps(
         {"video": title, "source": origin, "shorts": [{k: m.get(k) for k in keep} for m in moments]},
@@ -178,9 +189,7 @@ def write_report(out_dir: Path, title: str, origin: str, moments: list[dict]) ->
         ]
         if m.get("reason"):
             lines.append(f"- Pourquoi : {m['reason']}")
-        if m.get("description") or m.get("hashtags"):
-            lines += ["", "**Description à copier :**", "",
-                      f"> {m.get('description', '')} {' '.join(m.get('hashtags', []))}".rstrip()]
+        lines += ["", "**Description à copier :**", "", "```", m["yt_description"], "```"]
         lines += ["", "<details><summary>Transcription</summary>", "", m["text"], "", "</details>", ""]
     (out_dir / "shorts.md").write_text("\n".join(lines), encoding="utf-8")
 
