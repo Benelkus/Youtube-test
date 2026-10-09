@@ -1,5 +1,8 @@
 # YouTube Niche Finder
 
+> Ce dépôt contient aussi **[Shorts Maker](shorts-maker/)** : il génère 10 Shorts à partir d'une
+> vidéo YouTube ou d'un .mp4, en local sur Mac, sans abonnement ni clé API.
+
 Outil de détection de niches YouTube à fort potentiel. Il cherche les **outliers** :
 des vidéos qui explosent alors que la chaîne qui les publie est encore petite —
 le signal le plus fiable qu'une niche a de la demande non servie.
