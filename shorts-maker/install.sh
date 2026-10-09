@@ -49,6 +49,10 @@ brew services start ollama >/dev/null 2>&1 || true
 for _ in $(seq 1 20); do curl -s http://localhost:11434/api/tags >/dev/null && break; sleep 1; done
 ollama pull "$MODEL"
 
-chmod +x make_shorts
+chmod +x make_shorts create_app.sh
+say "Création de l'icône « Shorts Maker » sur le Bureau"
+./create_app.sh
+
 say "Installation terminée ✅"
-echo "Utilisation :  ./make_shorts \"https://www.youtube.com/watch?v=...\"   ou   ./make_shorts ma_video.mp4"
+echo "Double-clique sur « Shorts Maker » sur ton Bureau, ou dans le Terminal :"
+echo "  ./make_shorts \"https://www.youtube.com/watch?v=...\"   ou   ./make_shorts ma_video.mp4"

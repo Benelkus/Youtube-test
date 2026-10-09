@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 import time
 import unicodedata
@@ -56,6 +57,7 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     p.add_argument("-o", "--output", default=str(ROOT / "shorts"), help="dossier de sortie")
     p.add_argument("--plan-only", action="store_true",
                    help="affiche les moments choisis sans générer les vidéos")
+    p.add_argument("--open", action="store_true", help="ouvre le dossier des Shorts à la fin (Mac)")
     args = p.parse_args(argv)
     if args.min_d <= 0 or args.max_d <= args.min_d:
         p.error("il faut 0 < --min < --max")
@@ -146,6 +148,8 @@ def main(argv: list[str] | None = None) -> int:
         write_report(out_dir, title, args.input, moments)
         log(f"\n✅ Terminé en {fmt(time.time() - t0)} → {out_dir}")
         log("   Titres, descriptions et hashtags : shorts.md")
+        if args.open and sys.platform == "darwin":
+            subprocess.run(["open", str(out_dir)])
         return 0
     except KeyboardInterrupt:
         log("\nInterrompu.")

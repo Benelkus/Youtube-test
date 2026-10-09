@@ -23,6 +23,21 @@ adapté à la mémoire de ton Mac (`qwen3:8b` jusqu'à 16 Go, `qwen3:14b` à par
 
 ## Utilisation
 
+### Avec l'icône du Bureau (le plus simple)
+
+`install.sh` crée l'application **Shorts Maker** sur ton Bureau. Double-clique dessus :
+
+1. colle l'URL YouTube **ou** clique sur *Choisir un fichier…* ;
+2. choisis la mise en page : *Image entière (fond flouté)* ou *Plein écran* ;
+3. indique le nombre de Shorts (10 par défaut).
+
+Une fenêtre Terminal affiche la progression. À la fin, le dossier des Shorts s'ouvre tout seul.
+
+> Au premier lancement, macOS demande si « Shorts Maker » peut contrôler Terminal : clique sur **OK**.
+> Si tu déplaces le dossier `shorts-maker`, recrée l'icône avec `./create_app.sh`.
+
+### Dans le Terminal
+
 ```bash
 ./make_shorts "https://www.youtube.com/watch?v=XXXXXXXXXXX"
 ./make_shorts ~/Movies/mon_reportage.mp4
@@ -70,6 +85,7 @@ Chaque Short commence et finit sur une **phrase complète**, avec une **durée v
 | `-n 15` | générer 15 Shorts au lieu de 10, pour avoir du choix |
 | `--min 15 --max 90` | durées minimale et maximale (en secondes) |
 | `--layout crop` | plein écran recadré |
+| `--open` | ouvrir le dossier des Shorts dans le Finder à la fin |
 | `--plan-only` | afficher les moments choisis sans monter les vidéos (rapide, pour vérifier) |
 | `--no-title` | pas de titre incrusté en haut |
 | `--no-subs` | pas de sous-titres |
