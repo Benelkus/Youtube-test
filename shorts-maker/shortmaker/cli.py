@@ -45,7 +45,8 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     p.add_argument("--max", dest="max_d", type=float, default=60, help="durée maximale en s (défaut : 60)")
     p.add_argument("--layout", choices=render.LAYOUTS, default="blur",
                    help="blur = image entière sur fond flouté (défaut) ; crop = plein écran recadré au centre")
-    p.add_argument("--lang", default="fr", help="langue de la vidéo (défaut : fr ; « auto » pour détecter)")
+    p.add_argument("--lang", default="auto",
+                   help="langue parlée : auto (défaut, détectée), en, fr… — les sous-titres restent dans cette langue")
     p.add_argument("--model", default=DEFAULT_MODEL, help=f"modèle Ollama (défaut : {DEFAULT_MODEL})")
     p.add_argument("--no-ai", action="store_true", help="sélection sans LLM (heuristique seule)")
     p.add_argument("--whisper-model", default=None, help="modèle Whisper (défaut : large-v3-turbo)")

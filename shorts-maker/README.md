@@ -94,7 +94,7 @@ Chaque Short commence et finit sur une **phrase complète**, avec une **durée v
 | `--font "Impact"` | changer la police |
 | `--model qwen3:14b` | choisir un autre modèle Ollama |
 | `--no-ai` | sélection sans IA (mots-clés + rythme), si Ollama n'est pas lancé |
-| `--lang auto` | détecter la langue au lieu du français |
+| `--lang en` | forcer la langue parlée (par défaut elle est détectée : les sous-titres restent en anglais pour une vidéo en anglais) |
 | `-o ~/Desktop/shorts` | changer le dossier de sortie |
 
 Toutes les options : `./make_shorts --help`

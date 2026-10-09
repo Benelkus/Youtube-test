@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -47,6 +48,14 @@ LEXICON = [
     "jamais", "premier", "première", "seul", "seule", "record", "plus puissant",
     "le plus", "la plus", "incroyable", "terrifiant", "redoutable", "inédit", "historique",
     "choc", "révél", "personne", "impossible", "invisible", "vitesse", "mach",
+    # English
+    "tank", "strike", "explosion", "bomb", "artillery", "nuclear", "hypersonic", "stealth",
+    "fighter jet", "aircraft carrier", "submarine", "warship", "intercept", "shot down",
+    "destroyed", "attack", "assault", "frontline", "troops", "soldiers", "army", "navy",
+    "special forces", "nato", "war", "invasion", "deterrence", "threat", "classified",
+    "intelligence", "never", "first", "only", "most powerful", "deadliest", "fastest",
+    "incredible", "terrifying", "unprecedented", "historic", "invisible", "speed",
+    "thousand", "billion", "miles", "percent",
     # chiffres
     "mille", "million", "milliard", "kilomètre", "km", "tonnes", "%", "pour cent",
 ]
@@ -181,7 +190,8 @@ def _score(value) -> float:
 
 def llm_candidates(sents: list[dict], model: str, video_title: str, count: int,
                    min_d: float, max_d: float, cache: Path, log) -> list[dict]:
-    key = {"model": model, "min": min_d, "max": max_d, "count": count}
+    key = {"model": model, "min": min_d, "max": max_d, "count": count,
+           "transcript": hashlib.sha1("".join(s["text"] for s in sents).encode()).hexdigest()[:12]}
     if cache.exists():
         data = json.loads(cache.read_text())
         if data.get("key") == key:
