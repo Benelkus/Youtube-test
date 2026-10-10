@@ -23,7 +23,9 @@ brew install python@3.12 ollama
 if ! command -v ffmpeg >/dev/null 2>&1; then
   brew install ffmpeg
 fi
-if ! ffmpeg -hide_banner -filters 2>/dev/null | grep -qE '^\s*\S+\s+ass\s'; then
+# Liste capturée d'abord : avec pipefail, « ffmpeg | grep -q » échoue même quand libass est là
+FILTERS=$(ffmpeg -hide_banner -filters 2>/dev/null || true)
+if ! grep -qE '^\s*\S+\s+ass\s' <<<"$FILTERS"; then
   say "Ton ffmpeg n'a pas libass : installation de la version complète"
   brew uninstall --ignore-dependencies ffmpeg || true
   brew tap homebrew-ffmpeg/ffmpeg
