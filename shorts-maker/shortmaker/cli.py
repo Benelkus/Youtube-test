@@ -134,6 +134,7 @@ def main(argv: list[str] | None = None) -> int:
             # Le nom du fichier = le titre : YouTube Studio le reprend tel quel à l'import
             m["file"] = publish.file_title(m["yt_title"], used)
             m["yt_description"] = publish.build_description(m, source_url, args.meta_lang)
+            m["yt_tags"] = publish.build_tags(m, args.meta_lang)
             log(f"   #{rank:02d} {fmt(m['start'])}→{fmt(m['end'])} ({m['end'] - m['start']:.0f}s)"
                 f"  score {m['score']:.0f}  {m['title']}")
 
@@ -172,7 +173,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def write_report(out_dir: Path, title: str, origin: str, moments: list[dict]) -> None:
-    keep = ("rank", "file", "start", "end", "yt_title", "yt_description", "hashtags",
+    keep = ("rank", "file", "start", "end", "yt_title", "yt_description", "yt_tags", "hashtags",
             "score", "llm", "dynamic", "loudness_db", "cuts_per_min", "reason", "text")
     (out_dir / "shorts.json").write_text(json.dumps(
         {"video": title, "source": origin, "shorts": [{k: m.get(k) for k in keep} for m in moments]},
@@ -189,7 +190,8 @@ def write_report(out_dir: Path, title: str, origin: str, moments: list[dict]) ->
         ]
         if m.get("reason"):
             lines.append(f"- Pourquoi : {m['reason']}")
-        lines += ["", "**Description à copier :**", "", "```", m["yt_description"], "```"]
+        lines += ["", "**Description à copier :**", "", "```", m["yt_description"], "```",
+                  "", "**Tags à copier :**", "", "```", m["yt_tags"], "```"]
         lines += ["", "<details><summary>Transcription</summary>", "", m["text"], "", "</details>", ""]
     (out_dir / "shorts.md").write_text("\n".join(lines), encoding="utf-8")
 

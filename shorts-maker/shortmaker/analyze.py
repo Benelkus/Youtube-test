@@ -167,11 +167,13 @@ contraste, enjeu ou curiosité (exemple de style : "This $1 Laser Shot Destroys 
 Jamais une phrase recopiée de la transcription, pas de guillemets, pas de hashtag, rien de faux \
 par rapport au contenu ; en anglais, majuscule aux mots importants (Title Case) ;
 - "description" : 2 phrases qui posent le contexte et donnent envie de regarder jusqu'au bout ;
-- "hashtags" : 3 à 5 hashtags précis sur le sujet (pas #shorts, il est ajouté automatiquement).
+- "hashtags" : 3 à 5 hashtags précis sur le sujet (pas #shorts, il est ajouté automatiquement) ;
+- "tags" : 10 à 15 tags YouTube (mots-clés de recherche, sans #) : d'abord les noms précis \
+(armes, systèmes, pays, armées, conflits), puis des termes plus larges (ex. military technology, defense).
 
 Réponds UNIQUEMENT avec ce JSON :
 {{"clips": [{{"start_id": 12, "end_id": 19, "title": "...", "description": "...", \
-"hashtags": ["#...", "#..."], "score": 78, "reason": "pourquoi ce moment fonctionne (en français)"}}]}}"""
+"hashtags": ["#...", "#..."], "tags": ["...", "..."], "score": 78, "reason": "pourquoi ce moment fonctionne (en français)"}}]}}"""
 
 META_LANGS = {"en": "ANGLAIS", "fr": "FRANÇAIS", "es": "ESPAGNOL", "de": "ALLEMAND"}
 
@@ -199,7 +201,7 @@ def _score(value) -> float:
 
 def llm_candidates(sents: list[dict], model: str, video_title: str, count: int,
                    min_d: float, max_d: float, cache: Path, log, meta_lang: str = "en") -> list[dict]:
-    key = {"model": model, "min": min_d, "max": max_d, "count": count, "meta_lang": meta_lang,
+    key = {"v": 2, "model": model, "min": min_d, "max": max_d, "count": count, "meta_lang": meta_lang,
            "transcript": hashlib.sha1("".join(s["text"] for s in sents).encode()).hexdigest()[:12]}
     if cache.exists():
         data = json.loads(cache.read_text())
@@ -232,11 +234,15 @@ def llm_candidates(sents: list[dict], model: str, video_title: str, count: int,
             tags = c.get("hashtags") or []
             if isinstance(tags, str):
                 tags = tags.split()
+            kw = c.get("tags") or []
+            if isinstance(kw, str):
+                kw = kw.split(",")
             clips.append({
                 "i": i, "j": j,
                 "title": str(c.get("title", "")).strip().strip('"«»“”')[:100],
                 "description": str(c.get("description", "")).strip(),
                 "hashtags": [t if t.startswith("#") else "#" + t for t in map(str, tags) if t][:6],
+                "tags": [str(k).strip().lstrip("#").strip() for k in kw if str(k).strip()][:20],
                 "llm": _score(c.get("score")),
                 "reason": str(c.get("reason", "")).strip(),
             })
@@ -281,7 +287,7 @@ def heuristic_candidates(sents: list[dict], min_d: float, max_d: float) -> list[
             raw = density * 2 + hook + clean_end
             title = _short_title(first["text"])
             clips.append({"i": i2, "j": j2, "title": title, "description": "",
-                          "hashtags": [], "llm": raw, "reason": "sélection heuristique"})
+                          "hashtags": [], "tags": [], "llm": raw, "reason": "sélection heuristique"})
     if clips:  # remet le score brut sur 0-100
         vals = np.array([c["llm"] for c in clips])
         ranks = vals.argsort().argsort() / max(1, len(vals) - 1)

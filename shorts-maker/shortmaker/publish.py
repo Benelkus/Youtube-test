@@ -13,8 +13,10 @@ from pathlib import Path
 from urllib.parse import quote
 
 TEXTS = {
-    "en": {"full": "🎥 Full video:", "tags": ["#defense", "#military"]},
-    "fr": {"full": "🎥 Vidéo complète :", "tags": ["#defense", "#militaire"]},
+    "en": {"full": "🎥 Full video:", "tags": ["#defense", "#military"],
+           "keywords": ["military", "defense", "military technology", "army", "shorts"]},
+    "fr": {"full": "🎥 Vidéo complète :", "tags": ["#defense", "#militaire"],
+           "keywords": ["militaire", "défense", "armée", "technologie militaire", "shorts"]},
 }
 
 
@@ -47,6 +49,25 @@ def build_description(m: dict, source_url: str | None, meta_lang: str) -> str:
         parts.append(f"{texts['full']} {source_url}")
     parts.append(" ".join(tags[:6]))
     return "\n\n".join(parts)
+
+
+def build_tags(m: dict, meta_lang: str, video_title: str = "") -> str:
+    """Tags YouTube séparés par des virgules (limite YouTube : 500 caractères au total)."""
+    texts = TEXTS.get(meta_lang, TEXTS["en"])
+    # Les hashtags « #IronDome » donnent aussi des tags « Iron Dome »
+    from_hashtags = [re.sub(r"(?<=[a-z])(?=[A-Z])", " ", h.lstrip("#")) for h in m.get("hashtags") or []]
+    out, seen, total = [], set(), 0
+    for t in [*(m.get("tags") or []), *from_hashtags, *texts["keywords"]]:
+        t = re.sub(r"[<>,\"#]", "", str(t)).strip()[:100]
+        if not t or t.lower() in seen:
+            continue
+        cost = len(t) + (2 if " " in t else 0) + 1  # YouTube compte les guillemets des tags à espaces
+        if total + cost > 480:
+            break
+        seen.add(t.lower())
+        out.append(t)
+        total += cost
+    return ", ".join(out)
 
 
 PAGE = """<!doctype html>
@@ -83,7 +104,8 @@ button.done {{ background:var(--ok); }}
 <header>
   <h1>Publier les Shorts</h1>
   <p>{video} — glisse chaque vidéo dans YouTube Studio : le titre se remplit tout seul
-  (c'est le nom du fichier). Copie ensuite la description.</p>
+  (c'est le nom du fichier). Copie ensuite la description, puis les tags
+  (dans YouTube Studio : « Plus d'options » → Tags).</p>
 </header>
 <main>
 {cards}
@@ -113,6 +135,9 @@ CARD = """<section class="card">
     <label for="d{rank}">Description</label>
     <div class="field"><textarea id="d{rank}" rows="7">{desc}</textarea>
       <button data-copy="d{rank}">Copier</button></div>
+    <label for="k{rank}">Tags</label>
+    <div class="field"><textarea id="k{rank}" rows="3">{tags}</textarea>
+      <button data-copy="k{rank}">Copier</button></div>
     <div class="file">Fichier : {file}</div>
   </div>
 </section>"""
@@ -123,7 +148,8 @@ def write_page(out_dir: Path, video_title: str, moments: list[dict]) -> Path:
         CARD.format(
             src=quote(m["file"]), rank=m["rank"], score=f"{m['score']:.0f}",
             dur=f"{m['end'] - m['start']:.0f}", title=html.escape(m["yt_title"]),
-            desc=html.escape(m["yt_description"]), file=html.escape(m["file"]),
+            desc=html.escape(m["yt_description"]), tags=html.escape(m["yt_tags"]),
+            file=html.escape(m["file"]),
         )
         for m in moments
     ]

@@ -60,6 +60,8 @@ shorts.json
 2. Dans `publier.html` (qui s'ouvre à la fin), clique sur **Copier** à côté de la description et
    colle-la. Elle contient le texte, le lien vers la vidéo complète (si tu as donné une URL)
    et les hashtags dont `#shorts`.
+3. Toujours dans `publier.html`, clique sur **Copier** à côté des **tags** et colle-les dans
+   YouTube Studio → *Plus d'options* → *Tags*.
 
 Les titres et descriptions sont écrits **en anglais**, quelle que soit la langue de la vidéo,
 avec un style de titre de Short (chiffre frappant, contraste, curiosité).
