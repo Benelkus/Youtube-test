@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 # Crée « Shorts Maker.app » sur le Bureau : double-clic → colle une URL ou choisis un fichier.
+#   ./create_app.sh       → « Shorts Maker »    : titres, descriptions et tags en anglais
+#   ./create_app.sh fr    → « Shorts Maker FR » : titres, descriptions et tags en français,
+#                           Shorts rangés à part dans shorts-fr/
 set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP="$HOME/Desktop/Shorts Maker.app"
+
+case "${1:-en}" in
+  fr) APP_NAME="Shorts Maker FR"; EXTRA=" --meta-lang fr -o shorts-fr"; ICON="$DIR/assets/icon-fr.png" ;;
+  en) APP_NAME="Shorts Maker";    EXTRA=" --meta-lang en";              ICON="$DIR/assets/icon.png" ;;
+  *)  echo "Usage : ./create_app.sh [en|fr]" >&2; exit 1 ;;
+esac
+APP="$HOME/Desktop/$APP_NAME.app"
 
 if [ "$(uname -s)" != "Darwin" ]; then
   echo "Ce script ne fonctionne que sur Mac." >&2
@@ -14,7 +23,7 @@ cat > "$SCRIPT" <<'APPLESCRIPT'
 set toolDir to "__TOOL_DIR__"
 
 set r to display dialog "Colle l'URL de la vidéo YouTube, ou choisis un fichier vidéo sur ton Mac :" ¬
-	default answer "" with title "Shorts Maker" ¬
+	default answer "" with title "__APP_NAME__" ¬
 	buttons {"Annuler", "Choisir un fichier…", "Créer les Shorts"} ¬
 	default button 3 cancel button 1 with icon note
 
@@ -29,7 +38,7 @@ else
 	end if
 end if
 
-set l to display dialog "Mise en page des Shorts :" with title "Shorts Maker" ¬
+set l to display dialog "Mise en page des Shorts :" with title "__APP_NAME__" ¬
 	buttons {"Plein écran", "Image entière (fond flouté)"} default button 2 with icon note
 if button returned of l is "Plein écran" then
 	set layoutOpt to "crop"
@@ -37,7 +46,7 @@ else
 	set layoutOpt to "blur"
 end if
 
-set n to display dialog "Combien de Shorts ?" default answer "10" with title "Shorts Maker" ¬
+set n to display dialog "Combien de Shorts ?" default answer "10" with title "__APP_NAME__" ¬
 	buttons {"Annuler", "Lancer"} default button 2 cancel button 1 with icon note
 set countOpt to text returned of n
 try
@@ -49,7 +58,7 @@ end try
 set cmd to "cd " & quoted form of toolDir & ¬
 	" && { [ -x .venv/bin/python ] || ./install.sh; }" & ¬
 	" && ./make_shorts " & quoted form of src & ¬
-	" -n " & countOpt & " --layout " & layoutOpt & " --open" & ¬
+	" -n " & countOpt & " --layout " & layoutOpt & "__EXTRA__ --open" & ¬
 	"; echo; echo 'Tu peux fermer cette fenêtre.'"
 
 tell application "Terminal"
@@ -60,6 +69,7 @@ APPLESCRIPT
 
 # Chemin du dossier, échappé pour une chaîne AppleScript
 AS_DIR="$DIR" perl -pi -e 's/__TOOL_DIR__/my $d = $ENV{AS_DIR}; $d =~ s|\\|\\\\|g; $d =~ s|"|\\"|g; $d/e' "$SCRIPT"
+APP_NAME="$APP_NAME" EXTRA="$EXTRA" perl -pi -e 's/__APP_NAME__/$ENV{APP_NAME}/g; s/__EXTRA__/$ENV{EXTRA}/g' "$SCRIPT"
 
 rm -rf "$APP"
 osacompile -o "$APP" "$SCRIPT"
@@ -69,9 +79,9 @@ rm -f "$SCRIPT"
 ICONSET=$(mktemp -d)/applet.iconset
 mkdir -p "$ICONSET"
 for s in 16 32 128 256 512; do
-  sips -z $s $s "$DIR/assets/icon.png" --out "$ICONSET/icon_${s}x${s}.png" >/dev/null
+  sips -z $s $s "$ICON" --out "$ICONSET/icon_${s}x${s}.png" >/dev/null
   d=$((s * 2))
-  sips -z $d $d "$DIR/assets/icon.png" --out "$ICONSET/icon_${s}x${s}@2x.png" >/dev/null
+  sips -z $d $d "$ICON" --out "$ICONSET/icon_${s}x${s}@2x.png" >/dev/null
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/applet.icns"
 rm -rf "$(dirname "$ICONSET")"
@@ -87,4 +97,4 @@ codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
 touch "$APP"
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP" >/dev/null 2>&1 || true
 
-echo "✅ « Shorts Maker » est sur ton Bureau. Double-clique dessus pour lancer."
+echo "✅ « $APP_NAME » est sur ton Bureau. Double-clique dessus pour lancer."

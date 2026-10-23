@@ -52,8 +52,9 @@ for _ in $(seq 1 20); do curl -s http://localhost:11434/api/tags >/dev/null && b
 ollama pull "$MODEL"
 
 chmod +x make_shorts create_app.sh
-say "Création de l'icône « Shorts Maker » sur le Bureau"
-./create_app.sh
+say "Création des icônes « Shorts Maker » (anglais) et « Shorts Maker FR » sur le Bureau"
+./create_app.sh en
+./create_app.sh fr
 
 say "Installation terminée ✅"
 echo "Double-clique sur « Shorts Maker » sur ton Bureau, ou dans le Terminal :"

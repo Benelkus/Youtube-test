@@ -53,6 +53,20 @@ shorts.md     ← classement, score et raison de chaque choix
 shorts.json
 ```
 
+## Deux chaînes : anglais et français
+
+Il y a deux icônes sur le Bureau, qui utilisent le même outil :
+
+| Icône | Titres, descriptions, tags | Dossier des Shorts |
+|---|---|---|
+| **Shorts Maker** | en anglais | `shorts/` |
+| **Shorts Maker FR** (badge tricolore) | en français | `shorts-fr/` |
+
+Les sous-titres sont toujours dans la langue **parlée** dans la vidéo : une vidéo en français
+donne des sous-titres en français, une vidéo en anglais des sous-titres en anglais.
+
+Pour recréer une icône : `./create_app.sh en` ou `./create_app.sh fr`.
+
 ## Publier sur YouTube
 
 1. Glisse la vidéo dans YouTube Studio : **le titre se remplit tout seul** (YouTube reprend le

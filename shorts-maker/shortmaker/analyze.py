@@ -163,7 +163,7 @@ Règles strictes :
 Pour chaque extrait, écris aussi les textes de publication YouTube, TOUJOURS EN {meta_lang}, \
 quelle que soit la langue de la vidéo :
 - "title" : un vrai titre de Short, 40 à 70 caractères, qui donne envie de cliquer : chiffre frappant, \
-contraste, enjeu ou curiosité (exemple de style : "This $1 Laser Shot Destroys a $100,000 Drone"). \
+contraste, enjeu ou curiosité (exemple de style : "{title_example}"). \
 Jamais une phrase recopiée de la transcription, pas de guillemets, pas de hashtag, rien de faux \
 par rapport au contenu ; en anglais, majuscule aux mots importants (Title Case) ;
 - "description" : 2 phrases qui posent le contexte et donnent envie de regarder jusqu'au bout ;
@@ -176,6 +176,10 @@ Réponds UNIQUEMENT avec ce JSON :
 "hashtags": ["#...", "#..."], "tags": ["...", "..."], "score": 78, "reason": "pourquoi ce moment fonctionne (en français)"}}]}}"""
 
 META_LANGS = {"en": "ANGLAIS", "fr": "FRANÇAIS", "es": "ESPAGNOL", "de": "ALLEMAND"}
+TITLE_EXAMPLES = {
+    "en": "This $1 Laser Shot Destroys a $100,000 Drone",
+    "fr": "Ce tir laser à 1 $ détruit un drone à 100 000 $",
+}
 
 
 def _windows(sents: list[dict], span: float = 300.0, step: float = 240.0) -> list[list[dict]]:
@@ -211,7 +215,8 @@ def llm_candidates(sents: list[dict], model: str, video_title: str, count: int,
     windows = _windows(sents)
     per_window = max(3, math.ceil(count * 2.5 / max(1, len(windows))))
     system = SYSTEM_PROMPT.format(min_d=int(min_d), max_d=int(max_d),
-                                  meta_lang=META_LANGS.get(meta_lang, meta_lang.upper()))
+                                  meta_lang=META_LANGS.get(meta_lang, meta_lang.upper()),
+                                  title_example=TITLE_EXAMPLES.get(meta_lang, TITLE_EXAMPLES["en"]))
     clips: list[dict] = []
     for n, win in enumerate(windows, 1):
         log(f"   LLM : fenêtre {n}/{len(windows)} ({_fmt(win[0]['s'])} → {_fmt(win[-1]['e'])})")
